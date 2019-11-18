@@ -22,7 +22,9 @@ describe("formatDates", () => {
       }
     ];
     let newArr = formatDates(arr);
-    expect(newArr[0].created_at).to.equal("Sun, 23 Nov 1986 12:21:54 GMT");
+    expect(newArr[0].created_at).to.equal(
+      new Date(arr[0].created_at).toUTCString()
+    );
   });
   it("returns a multi-element array, with the correctly formatted created_at key, when a multi-element array is passed ", () => {
     const arr = [
@@ -57,31 +59,33 @@ describe("formatDates", () => {
       }
     ];
     const actual = formatDates(arr);
-      expect(actual[3].created_at).to.eql("Tue, 26 Nov 1974 12:21:54 GMT");
-    });
+    expect(actual[3].created_at).to.eql(
+      new Date(arr[3].created_at).toUTCString()
+    );
   });
-  // note to self this solution does mutate the original array unsure why?
-  it("does not mutate the original array", () => {
-    const arr = [
-      {
-        title: "They're not exactly dogs, are they?",
-        topic: "mitch",
-        author: "butter_bridge",
-        body: "Well? Think about it.",
-        created_at: 533132514171
-      }
-    ];
-    formatDates(arr);
-    expect(arr).to.eql([
-      {
-        title: "They're not exactly dogs, are they?",
-        topic: "mitch",
-        author: "butter_bridge",
-        body: "Well? Think about it.",
-        created_at: 533132514171
-      }
-    ]);
-  });
+});
+// note to self this solution does mutate the original array unsure why?
+it("does not mutate the original array", () => {
+  const arr = [
+    {
+      title: "They're not exactly dogs, are they?",
+      topic: "mitch",
+      author: "butter_bridge",
+      body: "Well? Think about it.",
+      created_at: 533132514171
+    }
+  ];
+  formatDates(arr);
+  expect(arr).to.eql([
+    {
+      title: "They're not exactly dogs, are they?",
+      topic: "mitch",
+      author: "butter_bridge",
+      body: "Well? Think about it.",
+      created_at: 533132514171
+    }
+  ]);
+});
 
 describe("makeRefObj", () => {
   it("returns an empty object when input is an empty array", () => {
@@ -104,7 +108,7 @@ describe("makeRefObj", () => {
     let actual = makeRefObj(input);
     expect(actual).to.eql({ A: 1, B: 2, C: 3, D: 4 });
   });
-  it('does not mutate original data', () => {
+  it("does not mutate original data", () => {
     let input = [{ article_id: 1, title: "A" }];
     makeRefObj(input);
     expect(input).to.eql([{ article_id: 1, title: "A" }]);
@@ -114,7 +118,7 @@ describe("makeRefObj", () => {
 describe("formatComments", () => {
   it("returns an empty array, ", () => {
     let input = [];
-    let actual = formatComments(input,[]);
+    let actual = formatComments(input, []);
     expect(actual).to.eql([]);
   });
   it("returns a new array for formatted comments using the reference object", () => {
@@ -127,7 +131,7 @@ describe("formatComments", () => {
         created_at: 1038314163389
       }
     ];
-    let refObj = {A:1};
+    let refObj = { A: 1 };
     let actual = formatComments(input, refObj);
     actual = formatDates(actual);
     expect(actual).to.eql([
@@ -136,7 +140,7 @@ describe("formatComments", () => {
         article_id: 1,
         author: "butter_bridge",
         votes: 1,
-        created_at: "Tue, 26 Nov 2002 12:36:03 GMT"
+        created_at: new Date(input[0].created_at).toUTCString()
       }
     ]);
   });
@@ -166,19 +170,18 @@ describe("formatComments", () => {
         article_id: 1,
         author: "butter_bridge",
         votes: 1,
-        created_at: "Tue, 26 Nov 2002 12:36:03 GMT"
+        created_at: new Date(input[0].created_at).toUTCString()
       },
       {
         body: "The owls are not what they seem.",
         article_id: 2,
         author: "icellusedkars",
         votes: 20,
-        created_at: 'Mon, 26 Nov 2001 12:36:03 GMT'
+        created_at: new Date(input[1].created_at).toUTCString()
       }
     ]);
-
   });
-  it('check it does not mutate original data', () => {
+  it("check it does not mutate original data", () => {
     const input = [
       {
         body: "This is a bad article name",
@@ -213,6 +216,5 @@ describe("formatComments", () => {
         created_at: 1006778163389
       }
     ]);
-
   });
 });
