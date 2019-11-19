@@ -1,9 +1,10 @@
-const express = require('express');
+const express = require("express");
 const apiRouter = express.Router();
-const {articlesRouter} = require('./articlesRouter');
+const topicsRouter = require("./topicsRouter");
+const usersRouter = require("./usersRouter");
 
-apiRouter.use('/', () => {
-  console.log('At apiRouter!')
-})
-
+apiRouter
+  .use("/topics", topicsRouter)
+  .use("/users", usersRouter)
+  
 module.exports = apiRouter;
