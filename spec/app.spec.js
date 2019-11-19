@@ -137,6 +137,24 @@ describe("/api", () => {
             expect(body.article[0].article_id).to.equal(2);
           });
       });
+      it('PATCH:404, an invalid id', () => {
+        return request(app)
+          .patch("/api/articles/2222222")
+          .send({ inc_votes: 100 })
+          .expect(404)
+          .then(({body}) => {
+            expect(body.msg).to.equal('Not Found');
+          })
+      });
+      it('POST:201, successfully posts a new comment to an article id', () => {
+        return request(app)
+          .post("/api/articles/2")
+          .send({ username: "lurker" , body: 'Great article, I read it whilst I was lurking'}).expect(201).then(({body}) => {
+            expect(body.article[0].article_id).to.equal(2);
+            expect(body.article[0].author).to.equal('lurker');
+          }) 
+
+      });
     });
   });
 });
