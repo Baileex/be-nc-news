@@ -62,10 +62,10 @@ describe("/api", () => {
         return request(app)
           .get("/api/users/butter_bridge")
           .expect(200)
-          .then(({ body: { user } }) => {
-            expect(user[0].username).to.equal("butter_bridge");
-            expect(user[0]).to.have.keys("username", "avatar_url", "name");
-            expect(user.length).to.equal(1);
+          .then(({ body }) => {
+            expect(body.user[0].username).to.equal("butter_bridge");
+            expect(body.user[0]).to.have.keys("username", "avatar_url", "name");
+            expect(body.user.length).to.equal(1);
           });
       });
       it("INVALID:METHODS", () => {
@@ -87,6 +87,54 @@ describe("/api", () => {
           .expect(404)
           .then(({ body }) => {
             expect(body.msg).to.equal("Username not found");
+          });
+      });
+    });
+  });
+  describe("/articles", () => {
+    describe("/:article_id", () => {
+      it("GET:200", () => {
+        return request(app)
+          .get("/api/articles/2")
+          .expect(200)
+          .then(({ body: { article } }) => {
+            expect(article[0].article_id).to.equal(2);
+            expect(article[0]).to.have.keys(
+              "article_id",
+              "title",
+              "body",
+              "votes",
+              "topic",
+              "author",
+              "created_at",
+              "comment_count"
+            );
+          });
+      });
+      it("GET:404, a valid id that does not exist", () => {
+        return request(app)
+          .get("/api/articles/22222")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Not Found");
+          });
+      });
+      it("GET:406, an invalid id", () => {
+        return request(app)
+          .get("/api/articles/banana")
+          .expect(406)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Not an acceptable id");
+          });
+      });
+      it("PATCH:202, successfully updates votes in article ", () => {
+        return request(app)
+          .patch("/api/articles/2")
+          .send({ inc_votes: 100 })
+          .expect(202)
+          .then(({ body }) => {
+            expect(body.article[0].votes).to.equal(100);
+            expect(body.article[0].article_id).to.equal(2);
           });
       });
     });

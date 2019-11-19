@@ -1,4 +1,4 @@
-\c nc_news
+\c nc_news_test
 
 \dt
 
