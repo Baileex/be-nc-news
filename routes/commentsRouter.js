@@ -1,9 +1,16 @@
 const express = require("express");
 const commentsRouter = express.Router();
-const {patchCommentById} = require('../controllers/commentsController')
+const {
+  patchCommentById,
+  deleteCommentById
+} = require("../controllers/commentsController");
 
 commentsRouter
   .route("/:comment_id")
-  .patch(patchCommentById);
+  .patch(patchCommentById)
+  .delete(deleteCommentById)
+  .all((req, res, next) => {
+    res.status(405).send({ msg: "Invalid Method" });
+  });
 
-  module.exports = commentsRouter
+module.exports = commentsRouter;

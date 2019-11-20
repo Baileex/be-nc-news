@@ -394,13 +394,13 @@ describe("/api", () => {
       });
     });
   });
-  describe.only("/comments", () => {
+  describe("/comments", () => {
     describe("/:comments", () => {
       it("INVALID:METHODS", () => {
-        const invalidMethods = ["patch", "put", "delete"];
+        const invalidMethods = ["get", "post", "put"];
         const methodPromises = invalidMethods.map(method => {
           return request(app)
-            [method]("/api/topics")
+            [method]("/api/comments/2")
             .expect(405)
             .then(body => {
               expect(body.status).to.equal(405);
@@ -409,13 +409,13 @@ describe("/api", () => {
         });
         return Promise.all(methodPromises);
       });
-      it("PATCH:202, successfully updates votes in article ", () => {
+      it("PATCH:202, successfully updates votes in article", () => {
         return request(app)
           .patch("/api/comments/2")
           .send({ inc_votes: 100 })
           .expect(202)
           .then(({ body }) => {
-            console.log(body.comment);
+            //console.log(body.comment);
             expect(body.comment[0].votes).to.equal(114);
             expect(body.comment[0].comment_id).to.equal(2);
           });
@@ -463,6 +463,40 @@ describe("/api", () => {
           .then(({ body }) => {
             expect(body.msg).to.contain("Not Found");
           });
+      });
+      it("DELETE:204, successfully deletes comment ", () => {
+        return request(app)
+          .delete("/api/comments/1")
+          .expect(204);
+      });
+      it("DELETE:404, error message if provided a valid comment_id that does not exist", () => {
+        return request(app)
+          .delete("/api/comments/2222")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Comment ID Not Found");
+          });
+      });
+      it("DELETE:400, error message if provided a invalid comment_id that does not exist", () => {
+        return request(app)
+          .delete("/api/comments/banana")
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.contain("Bad Request");
+          });
+      });
+      it("INVALID:METHODS", () => {
+        const invalidMethods = ["get", "post", "put"];
+        const methodPromises = invalidMethods.map(method => {
+          return request(app)
+            [method]("/api/comments/2")
+            .expect(405)
+            .then(body => {
+              expect(body.status).to.equal(405);
+              expect(body.body.msg).to.equal("Invalid Method");
+            });
+        });
+        return Promise.all(methodPromises);
       });
     });
   });

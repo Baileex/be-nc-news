@@ -41,10 +41,6 @@ app.use((err, req, res, next) => {
   } else next(err);
 });
 
-// wrong method
-app.use((req, res) => {
-  res.status(405).send({ msg: "Method not allowed" });
-});
 
 // server error
 app.use((err, req, res, next) => {
