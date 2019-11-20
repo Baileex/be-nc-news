@@ -55,14 +55,36 @@ const addNewComment = comment => {
 };
 
 const fetchComments = (article_id, sort_by, order) => {
+  if (sort_by === undefined && order === undefined) {
+    sort_by = "created_at";
+    order = "desc";
+  }
   return connection
     .select("*")
     .from("comments")
     .where({ article_id: article_id })
-    .orderBy(sort_by || 'created_at', order || "desc")
+    .orderBy(sort_by, order)
     .returning("*")
     .then(comments => {
-      return comments;
+      if (order !== "asc" && order !== "desc") {
+        return Promise.reject({ status: 400, msg: "Bad Request" });
+      } else if (comments.length === 0) return fetchArticleById(article_id);
+      else return comments;
+    });
+};
+
+const fetchAllArticles = () => {
+  return connection
+    .select("articles.*", "articles.body")
+    .from("articles")
+    .leftJoin("comments", "articles.article_id", "comments.article_id")
+    .groupBy("articles.article_id", "comments.article_id")
+    .count({ comment_count: "comments.article_id" })
+    .returning("*")
+    .then(articles => {
+      return articles.map(({ body, ...article }) => {
+        return { ...article };
+      });
     });
 };
 
@@ -70,5 +92,6 @@ module.exports = {
   fetchArticleById,
   updateArticleById,
   addNewComment,
-  fetchComments
+  fetchComments,
+  fetchAllArticles
 };

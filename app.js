@@ -22,7 +22,8 @@ app.use((err, req, res, next) => {
   console.log(err);
   const error400Ref = {
     "22P02": "Bad Request - invalid value",
-    "23502": "Bad Request - Required input not provided"
+    "23502": "Bad Request - Required input not provided",
+    "42703": "Bad Request - Cannot query something that does not exist"
   };
   const error404Ref = {
     "23503": "ID Not Found"

@@ -92,8 +92,15 @@ describe("/api", () => {
     });
   });
   describe("/articles", () => {
+    it.only("GET:200, get all the articles", () => {
+      return request(app).get("/api/articles").expect(200).then(({body}) => {
+        console.log(body)
+        expect(body.articles[0]).to.contain.keys('author', 'title', 'article_id', 'topic', 'created_at', 'votes', 'comment_count')
+      });
+    });
+
     describe("/:article_id", () => {
-      it("GET:200", () => {
+      it("GET:200, get article by id", () => {
         return request(app)
           .get("/api/articles/2")
           .expect(200)
@@ -253,6 +260,38 @@ describe("/api", () => {
             .then(({ body }) => {
               expect(body.comments).to.be.sortedBy("votes");
               expect(body.comments).to.be.ascendingBy("votes");
+            });
+        });
+        it("GET:400, sort_by a column that does not exist", () => {
+          return request(app)
+            .get("/api/articles/1/comments?sort_by=banana&order=asc")
+            .expect(400)
+            .then(({ body }) => {
+              expect(body.msg).to.contain("Bad Request");
+            });
+        });
+        it("GET:400, order isn't valid", () => {
+          return request(app)
+            .get("/api/articles/1/comments?sort_by=votes&order=banana")
+            .expect(400)
+            .then(({ body }) => {
+              expect(body.msg).to.contain("Bad Request");
+            });
+        });
+        it("GET:404, id does not exist", () => {
+          return request(app)
+            .get("/api/articles/22222/comments?sort_by=votes&order=asc")
+            .expect(404)
+            .then(({ body }) => {
+              expect(body.msg).to.contain("Not Found");
+            });
+        });
+        it("GET:400, id invalid", () => {
+          return request(app)
+            .get("/api/articles/banana/comments?sort_by=votes&order=asc")
+            .expect(400)
+            .then(({ body }) => {
+              expect(body.msg).to.contain("Bad Request");
             });
         });
       });
