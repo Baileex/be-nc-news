@@ -106,7 +106,7 @@ describe("/api", () => {
             "created_at",
             "votes",
             "comment_count"
-          )
+          );
           expect(body.articles).to.be.sortedBy("created_at", {
             descending: true
           });
@@ -394,32 +394,76 @@ describe("/api", () => {
       });
     });
   });
-  describe.only('/comments', () => {
-   describe('/:comments', () => {
-     it("INVALID:METHODS", () => {
-       const invalidMethods = ["patch", "put", "delete"];
-       const methodPromises = invalidMethods.map(method => {
-         return request(app)
-           [method]("/api/topics")
-           .expect(405)
-           .then(body => {
-             expect(body.status).to.equal(405);
-             expect(body.body.msg).to.equal("Invalid Method");
-           });
-       });
-       return Promise.all(methodPromises);
-     });
-     it("PATCH:202, successfully updates votes in article ", () => {
-       return request(app)
-         .patch("/api/comments/2")
-         .send({ inc_votes: 100 })
-         .expect(202)
-         .then(({ body }) => {
-           console.log(body.comment)
-           expect(body.comment[0].votes).to.equal(114);
-           expect(body.comment[0].comment_id).to.equal(2);
-         });
-     });
-   });
+  describe.only("/comments", () => {
+    describe("/:comments", () => {
+      it("INVALID:METHODS", () => {
+        const invalidMethods = ["patch", "put", "delete"];
+        const methodPromises = invalidMethods.map(method => {
+          return request(app)
+            [method]("/api/topics")
+            .expect(405)
+            .then(body => {
+              expect(body.status).to.equal(405);
+              expect(body.body.msg).to.equal("Invalid Method");
+            });
+        });
+        return Promise.all(methodPromises);
+      });
+      it("PATCH:202, successfully updates votes in article ", () => {
+        return request(app)
+          .patch("/api/comments/2")
+          .send({ inc_votes: 100 })
+          .expect(202)
+          .then(({ body }) => {
+            console.log(body.comment);
+            expect(body.comment[0].votes).to.equal(114);
+            expect(body.comment[0].comment_id).to.equal(2);
+          });
+      });
+      it("PATCH:202, decrements the vote count by the  number", () => {
+        return request(app)
+          .patch("/api/comments/2")
+          .send({ inc_votes: -2 })
+          .expect(202)
+          .then(({ body }) => {
+            expect(body.comment[0].votes).to.equal(12);
+          });
+      });
+      it("PATCH:202, ignores additional body elements", () => {
+        return request(app)
+          .patch("/api/comments/2")
+          .send({ inc_votes: 100, face: "smiley" })
+          .expect(202)
+          .then(({ body }) => {
+            expect(body.comment[0].votes).to.equal(114);
+          });
+      });
+      it("PATCH:202, when no inc_votes value, makes no changes", () => {
+        return request(app)
+          .patch("/api/comments/2")
+          .send({})
+          .expect(202)
+          .then(({ body }) => {
+            expect(body.comment[0].votes).to.equal(15);
+          });
+      });
+      it("PATCH:400, error where an invalid inc_votes value is provided", () => {
+        return request(app)
+          .patch("/api/comments/1")
+          .send({ inc_votes: "hello" })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.contain("Bad Request");
+          });
+      });
+      it("PATCH:404, error if provided a comment_id that does not exist", () => {
+        return request(app)
+          .patch("/api/comments/2222")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.contain("Not Found");
+          });
+      });
+    });
   });
 });
