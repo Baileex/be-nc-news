@@ -26,6 +26,12 @@ const updateArticleById = (article_id, inc_votes) => {
     .where({ article_id: article_id })
     .returning("*")
     .then(article => {
+      if (!inc_votes || inc_votes === NaN) {
+        return Promise.reject({
+          status: 400,
+          msg: "Bad Request"
+        });
+      }
       if (article.length === 0)
         return Promise.reject({
           status: 404,
@@ -35,11 +41,34 @@ const updateArticleById = (article_id, inc_votes) => {
     });
 };
 
-const addNewComment = (comment) => {
+const addNewComment = comment => {
   return connection
     .insert(comment)
     .into("comments")
-    .returning("*");
+    .returning("*")
+    .then(comment => {
+      console.log(comment);
+      if (comment.author === null || comment.body === null) {
+        return Promise.reject({ status: 400, msg: "Bad Request" });
+      } else return comment;
+    });
 };
 
-module.exports = { fetchArticleById, updateArticleById, addNewComment };
+const fetchComments = (article_id, sort_by, order) => {
+  return connection
+    .select("*")
+    .from("comments")
+    .where({ article_id: article_id })
+    .orderBy(sort_by || 'created_at', order || "desc")
+    .returning("*")
+    .then(comments => {
+      return comments;
+    });
+};
+
+module.exports = {
+  fetchArticleById,
+  updateArticleById,
+  addNewComment,
+  fetchComments
+};

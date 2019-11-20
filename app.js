@@ -1,15 +1,14 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-const apiRouter = require('./routes/apiRouter'); 
-
+const apiRouter = require("./routes/apiRouter");
 
 app.use(express.json());
 
-app.use('/api', apiRouter);
+app.use("/api", apiRouter);
 
-app.all('/*', (req, res, next) => {
-  res.status(404).send({msg: "Page not found"})
-})
+app.all("/*", (req, res, next) => {
+  res.status(404).send({ msg: "Page not found" });
+});
 
 //custom errors
 app.use((err, req, res, next) => {
@@ -18,40 +17,25 @@ app.use((err, req, res, next) => {
   } else next(err);
 });
 
-// 400 error handling
+// psql errors
 app.use((err, req, res, next) => {
-  const codes400 = ["42703"];
-  const codes406 = ["22P02"];
-  if (codes400.includes(err.code)) {
-    res.status(400).send({ msg: "Bad Request!" });
-  }
-  if (codes406.includes(err.code)) {
-    res.status(406).send({ msg: "Not an acceptable id" });
-  }
-  next(err);
-});
-
-
-// const errorHandler404 = 
-app.use((err, req, res, next) => {
-  //console.log(err);
-  const codes = ["404"];
-  if (codes.includes(err.code) || codes.includes(err.status)) {
-    res.status(404).send({ msg: "Page not found" });
-  } else {
-    next(err);
-  }
-});
-
-// const errorHandler400 = 
-app.use((err, req, res, next) => {
-  //console.log(err)
-  const codes = ["400"];
-  if (codes.includes(err.code) || codes.includes(err.status)) {
-    res.status(400).send({ msg: "Bad request" });
-  } else {
-    next(err);
-  }
+  console.log(err);
+  const error400Ref = {
+    "22P02": "Bad Request - invalid value",
+    "23502": "Bad Request - Required input not provided"
+  };
+  const error404Ref = {
+    "23503": "ID Not Found"
+  };
+  if (error400Ref[err.code]) {
+    if (err.detail) {
+      res.status(400).send({ msg: `${error400Ref[err.code]} - ${err.detail}` });
+    } else res.status(400).send({ msg: error400Ref[err.code] });
+  } else if (error404Ref[err.code]) {
+    if (err.detail) {
+      res.status(404).send({ msg: `${error404Ref[err.code]} - ${err.detail}` });
+    } else res.status(404).send({ msg: error404Ref[err.code] });
+  } else next(err);
 });
 
 // wrong method
@@ -64,7 +48,5 @@ app.use((err, req, res, next) => {
   console.log(err);
   res.status(500).send({ msg: "Internal Server Error" });
 });
-
-
 
 module.exports = app;
