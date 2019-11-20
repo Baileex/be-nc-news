@@ -12,6 +12,7 @@ app.all("/*", (req, res, next) => {
 
 //custom errors
 app.use((err, req, res, next) => {
+  //console.log(err)
   if (err.status) {
     res.status(err.status).send({ msg: err.msg });
   } else next(err);
@@ -19,14 +20,15 @@ app.use((err, req, res, next) => {
 
 // psql errors
 app.use((err, req, res, next) => {
-  console.log(err);
+  //console.log(err);
   const error400Ref = {
     "22P02": "Bad Request - invalid value",
     "23502": "Bad Request - Required input not provided",
     "42703": "Bad Request - Cannot query something that does not exist"
   };
   const error404Ref = {
-    "23503": "ID Not Found"
+    "23503": "ID Not Found",
+    "42P01": "Not Found"
   };
   if (error400Ref[err.code]) {
     if (err.detail) {
@@ -46,7 +48,7 @@ app.use((req, res) => {
 
 // server error
 app.use((err, req, res, next) => {
-  console.log(err);
+  //console.log(err);
   res.status(500).send({ msg: "Internal Server Error" });
 });
 

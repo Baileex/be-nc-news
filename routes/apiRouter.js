@@ -3,10 +3,12 @@ const apiRouter = express.Router();
 const topicsRouter = require("./topicsRouter");
 const usersRouter = require("./usersRouter");
 const articlesRouter = require("./articlesRouter");
+const commentsRouter = require('./commentsRouter')
 
 apiRouter
   .use("/topics", topicsRouter)
   .use("/users", usersRouter)
   .use("/articles", articlesRouter)
+  .use('/comments', commentsRouter)
   
 module.exports = apiRouter;

@@ -92,13 +92,110 @@ describe("/api", () => {
     });
   });
   describe("/articles", () => {
-    it.only("GET:200, get all the articles", () => {
-      return request(app).get("/api/articles").expect(200).then(({body}) => {
-        console.log(body)
-        expect(body.articles[0]).to.contain.keys('author', 'title', 'article_id', 'topic', 'created_at', 'votes', 'comment_count')
-      });
+    it("GET:200, get all the articles", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body }) => {
+          // console.log(body)
+          expect(body.articles[0]).to.contain.keys(
+            "author",
+            "title",
+            "article_id",
+            "topic",
+            "created_at",
+            "votes",
+            "comment_count"
+          )
+          expect(body.articles).to.be.sortedBy("created_at", {
+            descending: true
+          });
+        });
     });
-
+    it("GET:200, accepts the queries sort_by, order", () => {
+      return request(app)
+        .get("/api/articles?sort_by=votes&order=asc")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles[0]).to.contain.keys(
+            "author",
+            "title",
+            "article_id",
+            "topic",
+            "created_at",
+            "votes",
+            "comment_count"
+          );
+          expect(body.articles).to.be.sortedBy("votes");
+          expect(body.articles).to.be.ascendingBy("votes");
+        });
+    });
+    it("GET:200, filters the articles by author", () => {
+      return request(app)
+        .get("/api/articles?author=butter_bridge")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles[0]).to.contain.keys(
+            "author",
+            "title",
+            "article_id",
+            "topic",
+            "created_at",
+            "votes",
+            "comment_count"
+          );
+          expect(body.articles).to.be.descendingBy("author");
+        });
+    });
+    it("GET:200, filters the articles by topic", () => {
+      return request(app)
+        .get("/api/articles?topic=mitch")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles[0]).to.contain.keys(
+            "author",
+            "title",
+            "article_id",
+            "topic",
+            "created_at",
+            "votes",
+            "comment_count"
+          );
+          expect(body.articles).to.be.descendingBy("topic");
+        });
+    });
+    it("GET:400, error if provided with an invalid sort_by value", () => {
+      return request(app)
+        .get("/api/articles?sort_by=banana")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.contain("Bad Request");
+        });
+    });
+    it("GET:400, error if provided with an invalid order value", () => {
+      return request(app)
+        .get("/api/articles?order=banana")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.contain("Bad Request");
+        });
+    });
+    it("GET:404, error if provided with an invalid author", () => {
+      return request(app)
+        .get("/api/articles?author=banana")
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.equal("Author Not Found");
+        });
+    });
+    it("GET:404, error if provided with an invalid topic", () => {
+      return request(app)
+        .get("/api/articles?topic=banana")
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.equal("Topic Not Found");
+        });
+    });
     describe("/:article_id", () => {
       it("GET:200, get article by id", () => {
         return request(app)
@@ -296,5 +393,33 @@ describe("/api", () => {
         });
       });
     });
+  });
+  describe.only('/comments', () => {
+   describe('/:comments', () => {
+     it("INVALID:METHODS", () => {
+       const invalidMethods = ["patch", "put", "delete"];
+       const methodPromises = invalidMethods.map(method => {
+         return request(app)
+           [method]("/api/topics")
+           .expect(405)
+           .then(body => {
+             expect(body.status).to.equal(405);
+             expect(body.body.msg).to.equal("Invalid Method");
+           });
+       });
+       return Promise.all(methodPromises);
+     });
+     it("PATCH:202, successfully updates votes in article ", () => {
+       return request(app)
+         .patch("/api/comments/2")
+         .send({ inc_votes: 100 })
+         .expect(202)
+         .then(({ body }) => {
+           console.log(body.comment)
+           expect(body.comment[0].votes).to.equal(114);
+           expect(body.comment[0].comment_id).to.equal(2);
+         });
+     });
+   });
   });
 });

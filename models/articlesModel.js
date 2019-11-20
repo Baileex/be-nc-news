@@ -73,18 +73,51 @@ const fetchComments = (article_id, sort_by, order) => {
     });
 };
 
-const fetchAllArticles = () => {
+const fetchAllArticles = (sort_by, order, author, topic) => {
+  if (sort_by === undefined && order === undefined) {
+    sort_by = "created_at";
+    order = "desc";
+  }
   return connection
     .select("articles.*", "articles.body")
     .from("articles")
     .leftJoin("comments", "articles.article_id", "comments.article_id")
     .groupBy("articles.article_id", "comments.article_id")
     .count({ comment_count: "comments.article_id" })
+    .orderBy(sort_by, order)
+    .modify(filter => {
+      if (author) filter.where({ "articles.author": author });
+      if (topic) filter.where({ "articles.topic": topic });
+    })
     .returning("*")
     .then(articles => {
-      return articles.map(({ body, ...article }) => {
-        return { ...article };
-      });
+      const realAuthor = author
+        ? checkifReal(author, "users", "username")
+        : null;
+      const realTopic = topic ? checkifReal(topic, "topics", "slug") : null;
+      return Promise.all([realAuthor, realTopic, articles]).then(
+        ([realAuthor, realTopic, articles]) => {
+          if (realAuthor === false) {
+            return Promise.reject({ status: 404, msg: "Author Not Found" });
+          } else if (realTopic === false) {
+            return Promise.reject({ status: 404, msg: "Topic Not Found" });
+          } else {
+            return articles.map(({ body, ...article }) => {
+              return { ...article };
+            });
+          }
+        }
+      );
+    });
+};
+const checkifReal = (query, table, column) => {
+  return connection
+    .select("*")
+    .from(table)
+    .where(column, query)
+    .then(row => {
+      if (row.length === 0) return false;
+      else return true;
     });
 };
 
@@ -93,5 +126,6 @@ module.exports = {
   updateArticleById,
   addNewComment,
   fetchComments,
-  fetchAllArticles
+  fetchAllArticles,
+  checkifReal
 };
