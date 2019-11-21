@@ -7,7 +7,7 @@ const updateCommentById = (inc_votes, comment_id) => {
     .where({ comment_id: comment_id })
     .returning("*")
     .then(comment => {
-      console.log(comment);
+      //console.log(comment);
       if (comment.length === 0) {
         return Promise.reject({ status: 404, msg: "Comment ID Not Found" });
       } else return comment;
