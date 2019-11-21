@@ -47,11 +47,12 @@ exports.getAllComments = (req, res, next) => {
   const { article_id } = req.params;
   const { sort_by, order } = req.query;
   fetchArticleById(article_id).then(article => {
+    // need fetchComments to resolve before send response to client
     const comments = fetchComments(article_id, sort_by, order)
     return Promise.all([comments])
   })
   .then(([comments]) => {
-      console.log(comments)
+      // console.log(comments)
       res.status(200).send({ comments: comments });
     })
     .catch(next);
