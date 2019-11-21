@@ -8,7 +8,7 @@ exports.invalidMethods = (req, res, next) => {
   };
 
   exports.psqlErrors = (err, req, res, next) => {
-    //console.log(err);
+    // console.log(err);
     const error400Ref = {
       "22P02": "Bad Request - invalid value",
       "23502": "Bad Request - Required input not provided",
@@ -34,7 +34,7 @@ exports.invalidMethods = (req, res, next) => {
   };
 
   exports.customErrors = (err, req, res, next) => {
-    //console.log(err)
+    // console.log(err)
     if (err.status) {
       res.status(err.status).send({ msg: err.msg });
     } else next(err);

@@ -7,7 +7,8 @@ const app = require("../app");
 const connection = require("../db/connection");
 
 chai.use(chaiSorted);
-
+beforeEach(() => connection.seed.run());
+after(() => connection.destroy());
 describe("/api", () => {
   describe("/bad-endpoint", () => {
     it("GET:404, error with bad endpoint", () => {
@@ -19,10 +20,13 @@ describe("/api", () => {
         });
     });
   });
-  it('GET:200, returns JSON of all available endpoints in a JSON file', () => {
-    return request(app).get('/api').expect(200).then(({body}) => {
-      expect(body).to.be.an('object');
-    })
+  it("GET:200, returns JSON of all available endpoints in a JSON file", () => {
+    return request(app)
+      .get("/api")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body).to.be.an("object");
+      });
   });
   it("INVALID:METHODS", () => {
     const invalidMethods = ["patch", "put", "post", "delete"];
@@ -36,8 +40,7 @@ describe("/api", () => {
     });
     return Promise.all(methodPromises);
   });
-  beforeEach(() => connection.seed.run());
-  after(() => connection.destroy());
+  
   describe("/topics", () => {
     it("GET:200, returns all the topics", () => {
       return request(app)
@@ -80,13 +83,13 @@ describe("/api", () => {
           .get("/api/users/butter_bridge")
           .expect(200)
           .then(({ body }) => {
-            expect(body.user[0].username).to.equal("butter_bridge");
-            expect(body.user[0]).to.have.keys("username", "avatar_url", "name");
-            expect(body.user.length).to.equal(1);
+            expect(body.user.username).to.equal("butter_bridge");
+            expect(body.user).to.have.keys("username", "avatar_url", "name");
+            expect(body.user).to.be.an("object");
           });
       });
       it("INVALID:METHODS", () => {
-        const invalidMethods = ["patch", "put", "delete", 'post'];
+        const invalidMethods = ["patch", "put", "delete", "post"];
         const methodPromises = invalidMethods.map(method => {
           return request(app)
             [method]("/api/users/butter_bridge")
@@ -127,13 +130,13 @@ describe("/api", () => {
           expect(body.articles).to.be.sortedBy("created_at", {
             descending: true
           });
-          expect(body.articles).to.be.descendingBy('created_at')
+          expect(body.articles).to.be.descendingBy("created_at");
           expect(body.articles.length).to.equal(12);
         });
     });
-    it("GET:200, accepts the queries sort_by, order", () => {
+    it("GET:200, accepts the queries sort_by", () => {
       return request(app)
-        .get("/api/articles?sort_by=votes&order=asc")
+        .get("/api/articles?sort_by=author")
         .expect(200)
         .then(({ body }) => {
           expect(body.articles[0]).to.contain.keys(
@@ -145,13 +148,31 @@ describe("/api", () => {
             "votes",
             "comment_count"
           );
-          expect(body.articles).to.be.sortedBy("votes");
-          expect(body.articles).to.be.ascendingBy("votes");
+          expect
+          expect(body.articles).to.be.descendingBy("author");
+          expect(body.articles[0].author).to.equal('rogersop')
+        });
+    });
+    it("GET:200, accepts the queries order", () => {
+      return request(app)
+        .get("/api/articles?order=asc")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles[0]).to.contain.keys(
+            "author",
+            "title",
+            "article_id",
+            "topic",
+            "created_at",
+            "votes",
+            "comment_count"
+          );
+          expect(body.articles).to.be.ascendingBy("created_at");
         });
     });
     it("GET:200, filters the articles by author", () => {
       return request(app)
-        .get("/api/articles?author=butter_bridge")
+        .get("/api/articles?author=rogersop")
         .expect(200)
         .then(({ body }) => {
           expect(body.articles[0]).to.contain.keys(
@@ -163,7 +184,8 @@ describe("/api", () => {
             "votes",
             "comment_count"
           );
-          expect(body.articles).to.be.descendingBy("author");
+          expect(body.articles[0].author).to.equal("rogersop");
+          expect(body.articles[1].author).to.equal("rogersop");
         });
     });
     it("GET:200, filters the articles by topic", () => {
@@ -221,8 +243,8 @@ describe("/api", () => {
           .get("/api/articles/2")
           .expect(200)
           .then(({ body: { article } }) => {
-            expect(article[0].article_id).to.equal(2);
-            expect(article[0]).to.have.keys(
+            expect(article.article_id).to.equal(2);
+            expect(article).to.have.keys(
               "article_id",
               "title",
               "body",
@@ -232,6 +254,8 @@ describe("/api", () => {
               "created_at",
               "comment_count"
             );
+            expect(article).to.be.an("object");
+            expect(article.comment_count).to.equal("0");
           });
       });
       it("GET:404, a valid id that does not exist", () => {
@@ -250,14 +274,28 @@ describe("/api", () => {
             expect(body.msg).to.contain("Bad Request");
           });
       });
-      it("PATCH:200, successfully updates votes in article ", () => {
+      it("PATCH:200, successfully increases votes in article ", () => {
         return request(app)
           .patch("/api/articles/2")
           .send({ inc_votes: 100 })
           .expect(200)
           .then(({ body }) => {
-            expect(body.article[0].votes).to.equal(100);
-            expect(body.article[0].article_id).to.equal(2);
+            //console.log(body)
+            expect(body.article.votes).to.equal(100);
+            expect(body.article.article_id).to.equal(2);
+            expect(body.article).to.be.an("object");
+          });
+      });
+      it("PATCH:200, successfully decreases votes in article ", () => {
+        return request(app)
+          .patch("/api/articles/2")
+          .send({ inc_votes: -50 })
+          .expect(200)
+          .then(({ body }) => {
+            //console.log(body)
+            expect(body.article.votes).to.equal(-50);
+            expect(body.article.article_id).to.equal(2);
+            expect(body.article).to.be.an("object");
           });
       });
       it("PATCH:404, an invalid id", () => {
@@ -269,15 +307,7 @@ describe("/api", () => {
             expect(body.msg).to.equal("Not Found");
           });
       });
-      it("PATCH:400, no inc_votes on request body", () => {
-        return request(app)
-          .patch("/api/articles/2")
-          .send({ banana: 100 })
-          .expect(400)
-          .then(({ body }) => {
-            expect(body.msg).to.contain("Bad Request");
-          });
-      });
+      
       it("PATCH:400, invalid inc_votes on request body", () => {
         return request(app)
           .patch("/api/articles/2")
@@ -287,7 +317,30 @@ describe("/api", () => {
             expect(body.msg).to.contain("Bad Request");
           });
       });
-      describe("/comments", () => {
+      it("PATCH:200, no content request body", () => {
+        return request(app)
+          .patch("/api/articles/2")
+          .send({})
+          .expect(200)
+          .then(({ body }) => {
+            //console.log(body)
+            expect(body.article.votes).to.equal(0);
+          });
+      });
+      it("INVALID:METHODS", () => {
+        const invalidMethods = ["put", "delete", "post"];
+        const methodPromises = invalidMethods.map(method => {
+          return request(app)
+            [method]("/api/articles/2")
+            .expect(405)
+            .then(body => {
+              expect(body.status).to.equal(405);
+              expect(body.body.msg).to.equal("Invalid Method");
+            });
+        });
+        return Promise.all(methodPromises);
+      });
+      describe.only("/comments", () => {
         it("POST:201, successfully posts a new comment to an article id", () => {
           return request(app)
             .post("/api/articles/2/comments")
@@ -297,8 +350,12 @@ describe("/api", () => {
             })
             .expect(201)
             .then(({ body }) => {
-              expect(body.article.article_id).to.equal(2);
-              expect(body.article.author).to.equal("lurker");
+              // console.log(body.comment);
+              expect(body.comment.author).to.equal("lurker");
+              expect(body.comment).to.be.an('object')
+              expect(body).to.have.key('comment')
+              expect(body.comment).to.have.keys('comment_id', 'votes', 'created_at', 'author', 'body')
+              expect(body.comment.votes).to.equal(0);
             });
         });
         it("POST:400, no username or body included in sent body", () => {
@@ -352,7 +409,7 @@ describe("/api", () => {
           return request(app)
             .get("/api/articles/1/comments")
             .expect(200)
-            .then(({ body }) => {
+            .then(({body}) => {
               // console.log(body);
               expect(body.comments[0]).to.have.keys(
                 "comment_id",
@@ -396,7 +453,7 @@ describe("/api", () => {
         });
         it("GET:404, id does not exist", () => {
           return request(app)
-            .get("/api/articles/22222/comments?sort_by=votes&order=asc")
+            .get("/api/articles/22222/comments")
             .expect(404)
             .then(({ body }) => {
               expect(body.msg).to.contain("Not Found");
@@ -404,10 +461,19 @@ describe("/api", () => {
         });
         it("GET:400, id invalid", () => {
           return request(app)
-            .get("/api/articles/banana/comments?sort_by=votes&order=asc")
+            .get("/api/articles/banana/comments")
             .expect(400)
             .then(({ body }) => {
               expect(body.msg).to.contain("Bad Request");
+            });
+        });
+        it("GET:200, valid id but no comments", () => {
+          return request(app)
+            .get("/api/articles/2/comments")
+            .expect(200)
+            .then(({ body }) => {
+              // console.log(body)
+              expect(body.comments).to.eql([]);
             });
         });
       });
@@ -435,8 +501,9 @@ describe("/api", () => {
           .expect(200)
           .then(({ body }) => {
             //console.log(body.comment);
-            expect(body.comment[0].votes).to.equal(114);
-            expect(body.comment[0].comment_id).to.equal(2);
+            expect(body.comment.votes).to.equal(114);
+            expect(body.comment.comment_id).to.equal(2);
+            expect(body.comment).to.be.an("object");
           });
       });
       it("PATCH:200, decrements the vote count by the  number", () => {
@@ -445,7 +512,7 @@ describe("/api", () => {
           .send({ inc_votes: -2 })
           .expect(200)
           .then(({ body }) => {
-            expect(body.comment[0].votes).to.equal(12);
+            expect(body.comment.votes).to.equal(12);
           });
       });
       it("PATCH:200, ignores additional body elements", () => {
@@ -454,7 +521,16 @@ describe("/api", () => {
           .send({ inc_votes: 100, face: "smiley" })
           .expect(200)
           .then(({ body }) => {
-            expect(body.comment[0].votes).to.equal(114);
+            expect(body.comment.votes).to.equal(114);
+          });
+      });
+      it("PATCH:200, when no body elements", () => {
+        return request(app)
+          .patch("/api/comments/2")
+          .send({})
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.comment.votes).to.equal(14);
           });
       });
       it("PATCH:200, when no inc_votes value, makes no changes", () => {
@@ -463,7 +539,7 @@ describe("/api", () => {
           .send({})
           .expect(200)
           .then(({ body }) => {
-            expect(body.comment[0].votes).to.equal(15);
+            expect(body.comment.votes).to.equal(14);
           });
       });
       it("PATCH:400, error where an invalid inc_votes value is provided", () => {
