@@ -231,11 +231,11 @@ describe("/api", () => {
             expect(body.msg).to.contain("Bad Request");
           });
       });
-      it("PATCH:202, successfully updates votes in article ", () => {
+      it("PATCH:200, successfully updates votes in article ", () => {
         return request(app)
           .patch("/api/articles/2")
           .send({ inc_votes: 100 })
-          .expect(202)
+          .expect(200)
           .then(({ body }) => {
             expect(body.article[0].votes).to.equal(100);
             expect(body.article[0].article_id).to.equal(2);
@@ -409,40 +409,40 @@ describe("/api", () => {
         });
         return Promise.all(methodPromises);
       });
-      it("PATCH:202, successfully updates votes in article", () => {
+      it("PATCH:200, successfully updates votes in article", () => {
         return request(app)
           .patch("/api/comments/2")
           .send({ inc_votes: 100 })
-          .expect(202)
+          .expect(200)
           .then(({ body }) => {
             //console.log(body.comment);
             expect(body.comment[0].votes).to.equal(114);
             expect(body.comment[0].comment_id).to.equal(2);
           });
       });
-      it("PATCH:202, decrements the vote count by the  number", () => {
+      it("PATCH:200, decrements the vote count by the  number", () => {
         return request(app)
           .patch("/api/comments/2")
           .send({ inc_votes: -2 })
-          .expect(202)
+          .expect(200)
           .then(({ body }) => {
             expect(body.comment[0].votes).to.equal(12);
           });
       });
-      it("PATCH:202, ignores additional body elements", () => {
+      it("PATCH:200, ignores additional body elements", () => {
         return request(app)
           .patch("/api/comments/2")
           .send({ inc_votes: 100, face: "smiley" })
-          .expect(202)
+          .expect(200)
           .then(({ body }) => {
             expect(body.comment[0].votes).to.equal(114);
           });
       });
-      it("PATCH:202, when no inc_votes value, makes no changes", () => {
+      it("PATCH:200, when no inc_votes value, makes no changes", () => {
         return request(app)
           .patch("/api/comments/2")
           .send({})
-          .expect(202)
+          .expect(200)
           .then(({ body }) => {
             expect(body.comment[0].votes).to.equal(15);
           });
