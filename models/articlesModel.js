@@ -46,7 +46,7 @@ const addNewComment = comment => {
     .insert(comment)
     .into("comments")
     .returning("*")
-    .then(comment => {
+    .then(([comment]) => {
       //console.log(comment);
       if (comment.author === null || comment.body === null) {
         return Promise.reject({ status: 400, msg: "Bad Request" });

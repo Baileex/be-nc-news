@@ -278,8 +278,8 @@ describe("/api", () => {
             })
             .expect(201)
             .then(({ body }) => {
-              expect(body.article[0].article_id).to.equal(2);
-              expect(body.article[0].author).to.equal("lurker");
+              expect(body.article.article_id).to.equal(2);
+              expect(body.article.author).to.equal("lurker");
             });
         });
         it("POST:400, no username or body included in sent body", () => {

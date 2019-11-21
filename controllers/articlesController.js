@@ -35,8 +35,9 @@ exports.postCommentbyId = (req, res, next) => {
     body: body
   };
   addNewComment(comment)
-    .then(comment => {
-      res.status(201).send({ comment });
+    .then(article => {
+      console.log(article)
+      res.status(201).send({ article});
     })
     .catch(next);
 };
