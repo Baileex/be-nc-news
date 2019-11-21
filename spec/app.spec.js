@@ -19,6 +19,23 @@ describe("/api", () => {
         });
     });
   });
+  it('GET:200, returns JSON of all available endpoints in a JSON file', () => {
+    return request(app).get('/api').expect(200).then(({body}) => {
+      expect(body).to.be.an('object');
+    })
+  });
+  it("INVALID:METHODS", () => {
+    const invalidMethods = ["patch", "put", "post", "delete"];
+    const methodPromises = invalidMethods.map(method => {
+      return request(app)
+        [method]("/api")
+        .expect(405)
+        .then(({ body }) => {
+          expect(body.msg).to.equal("Invalid Method");
+        });
+    });
+    return Promise.all(methodPromises);
+  });
   beforeEach(() => connection.seed.run());
   after(() => connection.destroy());
   describe("/topics", () => {
@@ -69,7 +86,7 @@ describe("/api", () => {
           });
       });
       it("INVALID:METHODS", () => {
-        const invalidMethods = ["patch", "put", "delete"];
+        const invalidMethods = ["patch", "put", "delete", 'post'];
         const methodPromises = invalidMethods.map(method => {
           return request(app)
             [method]("/api/users/butter_bridge")
@@ -97,7 +114,7 @@ describe("/api", () => {
         .get("/api/articles")
         .expect(200)
         .then(({ body }) => {
-          // console.log(body)
+          // console.log(body.articles)
           expect(body.articles[0]).to.contain.keys(
             "author",
             "title",
@@ -110,6 +127,8 @@ describe("/api", () => {
           expect(body.articles).to.be.sortedBy("created_at", {
             descending: true
           });
+          expect(body.articles).to.be.descendingBy('created_at')
+          expect(body.articles.length).to.equal(12);
         });
     });
     it("GET:200, accepts the queries sort_by, order", () => {

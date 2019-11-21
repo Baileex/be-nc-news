@@ -36,7 +36,7 @@ exports.postCommentbyId = (req, res, next) => {
   };
   addNewComment(comment)
     .then(article => {
-      console.log(article)
+      //console.log(article)
       res.status(201).send({ article});
     })
     .catch(next);
