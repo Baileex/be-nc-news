@@ -340,7 +340,7 @@ describe("/api", () => {
         });
         return Promise.all(methodPromises);
       });
-      describe.only("/comments", () => {
+      describe("/comments", () => {
         it("POST:201, successfully posts a new comment to an article id", () => {
           return request(app)
             .post("/api/articles/2/comments")
