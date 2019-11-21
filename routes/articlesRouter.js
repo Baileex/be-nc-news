@@ -7,17 +7,21 @@ const {
   getAllComments,
   getAllArticles
 } = require("../controllers/articlesController");
+const { invalidMethods } = require("../error-handling/errors");
 
-articlesRouter.route('/').get(getAllArticles)
+articlesRouter.route('/').get(getAllArticles).all(invalidMethods)
 
 articlesRouter
   .route("/:article_id")
   .get(getArticleById)
-  .patch(patchArticleById);
+  .patch(patchArticleById)
+  .all(invalidMethods)
+
 
 articlesRouter
   .route("/:article_id/comments")
   .post(postCommentbyId)
-  .get(getAllComments);
+  .get(getAllComments)
+  .all(invalidMethods)
 
 module.exports = articlesRouter;

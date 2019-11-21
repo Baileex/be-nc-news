@@ -4,13 +4,12 @@ const {
   patchCommentById,
   deleteCommentById
 } = require("../controllers/commentsController");
+const {invalidMethods} = require('../error-handling/errors')
 
 commentsRouter
   .route("/:comment_id")
   .patch(patchCommentById)
   .delete(deleteCommentById)
-  .all((req, res, next) => {
-    res.status(405).send({ msg: "Invalid Method" });
-  });
+  .all((invalidMethods));
 
 module.exports = commentsRouter;
