@@ -58,7 +58,7 @@
   },
 
   "GET /api/articles/:article_id/comments": {
-    "description": "serves an array containing all comments from a specified article",
+    "description": "serves an array containing all comments (if any) from a specified article",
     "exampleResponse": {
       "comment_id": 44,
       "author": "grumpy19",
