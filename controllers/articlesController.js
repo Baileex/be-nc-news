@@ -4,14 +4,12 @@ const {
   addNewComment,
   fetchComments,
   fetchAllArticles,
-  checkifReal
 } = require("../models/articlesModel");
 
 exports.getArticleById = (req, res, next) => {
   const { article_id } = req.params;
   fetchArticleById(article_id)
     .then(article => {
-      //console.log({article: article})
       res.status(200).send({ article: article });
     })
     .catch(next);
@@ -37,7 +35,6 @@ exports.postCommentbyId = (req, res, next) => {
   };
   addNewComment(comment)
     .then(comment => {
-      // console.log({ comment: comment });
       res.status(201).send({ comment: comment });
     })
     .catch(next);
@@ -48,11 +45,9 @@ exports.getAllComments = (req, res, next) => {
   const { sort_by, order } = req.query;
   fetchArticleById(article_id).then(article => {
     // need fetchComments to resolve before send response to client
-    const comments = fetchComments(article_id, sort_by, order)
-    return Promise.all([comments])
+    return fetchComments(article_id, sort_by, order)
   })
-  .then(([comments]) => {
-      // console.log(comments)
+  .then((comments) => {
       res.status(200).send({ comments: comments });
     })
     .catch(next);

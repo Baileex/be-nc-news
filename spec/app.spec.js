@@ -47,7 +47,6 @@ describe("/api", () => {
         .get("/api/topics")
         .expect(200)
         .then(({ body: {topics} }) => {
-          // console.log(body.topics);
           expect(topics).to.be.an("array");
           expect(topics[0]).to.contain.keys("slug", "description");
           expect(topics[0].slug).to.equal("mitch");
@@ -58,7 +57,6 @@ describe("/api", () => {
         .get("/api/bad-path")
         .expect(404)
         .then(body => {
-          //console.log(body);
           expect(body.status).to.equal(404);
         });
     });
@@ -117,7 +115,6 @@ describe("/api", () => {
         .get("/api/articles")
         .expect(200)
         .then(({ body: {articles} }) => {
-          // console.log(body.articles)
           expect(articles[0]).to.contain.keys(
             "author",
             "title",
@@ -280,7 +277,6 @@ describe("/api", () => {
           .send({ inc_votes: 100 })
           .expect(200)
           .then(({ body: {article} }) => {
-            //console.log(body)
             expect(article.votes).to.equal(100);
             expect(article.article_id).to.equal(2);
             expect(article).to.be.an("object");
@@ -292,7 +288,6 @@ describe("/api", () => {
           .send({ inc_votes: -50 })
           .expect(200)
           .then(({ body: {article} }) => {
-            //console.log(body)
             expect(article.votes).to.equal(-50);
             expect(article.article_id).to.equal(2);
             expect(article).to.be.an("object");
@@ -323,7 +318,6 @@ describe("/api", () => {
           .send({})
           .expect(200)
           .then(({ body: {article} }) => {
-            //console.log(body)
             expect(article.votes).to.equal(0);
           });
       });
@@ -350,10 +344,9 @@ describe("/api", () => {
             })
             .expect(201)
             .then(({ body: {comment} }) => {
-              // console.log(body.comment);
               expect(comment.author).to.equal("lurker");
               expect(comment).to.be.an('object')
-              expect(comment).to.have.keys('comment_id', 'votes', 'created_at', 'author', 'body')
+              expect(comment).to.have.keys('comment_id', 'votes', 'created_at', 'author', 'body', 'article_id')
               expect(comment.votes).to.equal(0);
             });
         });
@@ -409,7 +402,6 @@ describe("/api", () => {
             .get("/api/articles/1/comments")
             .expect(200)
             .then(({body: {comments}}) => {
-              // console.log(body);
               expect(comments[0]).to.have.keys(
                 "comment_id",
                 "votes",
@@ -471,7 +463,6 @@ describe("/api", () => {
             .get("/api/articles/2/comments")
             .expect(200)
             .then(({ body: {comments} }) => {
-              // console.log(body)
               expect(comments).to.eql([]);
             });
         });
@@ -499,7 +490,6 @@ describe("/api", () => {
           .send({ inc_votes: 100 })
           .expect(200)
           .then(({ body: {comment} }) => {
-            //console.log(body.comment);
             expect(comment.votes).to.equal(114);
             expect(comment.comment_id).to.equal(2);
             expect(comment).to.be.an("object");

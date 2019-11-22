@@ -40,11 +40,10 @@ const addNewComment = comment => {
     .insert(comment)
     .into("comments")
     .returning("*")
-    .then(([{ article_id, ...comment }]) => {
-      //console.log(comment);
+    .then(([comment]) => {
       if (comment.author === null || comment.body === null) {
         return Promise.reject({ status: 400, msg: "Bad Request" });
-      } else return { ...comment };
+      } else return comment;
     });
 };
 
@@ -110,12 +109,6 @@ const checkifReal = (query, table, column) => {
     });
 };
 
-const checkIfArticle = article_id => {
-  return connection
-    .select(article_id)
-    .from("articles")
-    .where({ article_id: article_id });
-};
 module.exports = {
   fetchArticleById,
   updateArticleById,
@@ -123,5 +116,4 @@ module.exports = {
   fetchComments,
   fetchAllArticles,
   checkifReal,
-  checkIfArticle
 };

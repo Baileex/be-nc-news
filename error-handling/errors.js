@@ -3,12 +3,10 @@ exports.invalidMethods = (req, res, next) => {
   };
 
   exports.serverError = (err, req, res, next) => {
-    console.log(err);
-    res.status(500).send({ msg: "Internal Server Error" });
+      res.status(500).send({ msg: "Internal Server Error" });
   };
 
   exports.psqlErrors = (err, req, res, next) => {
-    // console.log(err);
     const error400Ref = {
       "22P02": "Bad Request - invalid value",
       "23502": "Bad Request - Required input not provided",
@@ -34,7 +32,6 @@ exports.invalidMethods = (req, res, next) => {
   };
 
   exports.customErrors = (err, req, res, next) => {
-    // console.log(err)
     if (err.status) {
       res.status(err.status).send({ msg: err.msg });
     } else next(err);
