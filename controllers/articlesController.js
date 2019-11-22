@@ -4,6 +4,7 @@ const {
   addNewComment,
   fetchComments,
   fetchAllArticles,
+  countArticles
 } = require("../models/articlesModel");
 
 exports.getArticleById = (req, res, next) => {
@@ -42,22 +43,29 @@ exports.postCommentbyId = (req, res, next) => {
 
 exports.getAllComments = (req, res, next) => {
   const { article_id } = req.params;
-  const { sort_by, order } = req.query;
-  fetchArticleById(article_id).then(article => {
-    // need fetchComments to resolve before send response to client
-    return fetchComments(article_id, sort_by, order)
-  })
-  .then((comments) => {
+  const { sort_by, order , limit, p} = req.query;
+  fetchArticleById(article_id)
+    .then(article => {
+      // need fetchComments to resolve before send response to client
+      return fetchComments(article_id, sort_by, order, limit, p);
+    })
+    .then(comments => {
       res.status(200).send({ comments: comments });
     })
     .catch(next);
 };
 
 exports.getAllArticles = (req, res, next) => {
-  const { sort_by, order, author, topic } = req.query;
-  fetchAllArticles(sort_by, order, author, topic)
-    .then(articles => {
-      res.status(200).send({ articles: articles });
+  const { sort_by, order, author, topic, limit, p } = req.query;
+  countArticles(author, topic).then(articleCount => {
+    const maxPages = Math.ceil(articleCount / limit);
+    if (maxPages === 0) {
+      maxPages = 1;
+    }
+  });
+  fetchAllArticles(sort_by, order, author, topic, limit, p)
+    .then(({updatedArticles, total_count}) => {
+      res.status(200).send({ articles: updatedArticles, total_count: total_count });
     })
     .catch(next);
 };

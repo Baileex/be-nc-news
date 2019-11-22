@@ -34,19 +34,19 @@ describe("/api", () => {
       return request(app)
         [method]("/api")
         .expect(405)
-        .then(({ body: {msg} }) => {
+        .then(({ body: { msg } }) => {
           expect(msg).to.equal("Invalid Method");
         });
     });
     return Promise.all(methodPromises);
   });
-  
+
   describe("/topics", () => {
     it("GET:200, returns all the topics", () => {
       return request(app)
         .get("/api/topics")
         .expect(200)
-        .then(({ body: {topics} }) => {
+        .then(({ body: { topics } }) => {
           expect(topics).to.be.an("array");
           expect(topics[0]).to.contain.keys("slug", "description");
           expect(topics[0].slug).to.equal("mitch");
@@ -80,7 +80,7 @@ describe("/api", () => {
         return request(app)
           .get("/api/users/butter_bridge")
           .expect(200)
-          .then(({ body: {user} }) => {
+          .then(({ body: { user } }) => {
             expect(user.username).to.equal("butter_bridge");
             expect(user).to.have.keys("username", "avatar_url", "name");
             expect(user).to.be.an("object");
@@ -103,7 +103,7 @@ describe("/api", () => {
         return request(app)
           .get("/api/users/banana")
           .expect(404)
-          .then(({ body: {msg} }) => {
+          .then(({ body: { msg } }) => {
             expect(msg).to.equal("Username not found");
           });
       });
@@ -114,7 +114,7 @@ describe("/api", () => {
       return request(app)
         .get("/api/articles")
         .expect(200)
-        .then(({ body: {articles} }) => {
+        .then(({ body: { articles, total_count } }) => {
           expect(articles[0]).to.contain.keys(
             "author",
             "title",
@@ -128,14 +128,15 @@ describe("/api", () => {
             descending: true
           });
           expect(articles).to.be.descendingBy("created_at");
-          expect(articles.length).to.equal(12);
+          expect(articles.length).to.equal(10);
+          expect(total_count).to.equal(12);
         });
     });
     it("GET:200, accepts the queries sort_by", () => {
       return request(app)
         .get("/api/articles?sort_by=author")
         .expect(200)
-        .then(({ body: {articles} }) => {
+        .then(({ body: { articles } }) => {
           expect(articles[0]).to.contain.keys(
             "author",
             "title",
@@ -145,16 +146,16 @@ describe("/api", () => {
             "votes",
             "comment_count"
           );
-          expect
+          expect;
           expect(articles).to.be.descendingBy("author");
-          expect(articles[0].author).to.equal('rogersop')
+          expect(articles[0].author).to.equal("rogersop");
         });
     });
     it("GET:200, accepts the queries order", () => {
       return request(app)
         .get("/api/articles?order=asc")
         .expect(200)
-        .then(({ body: {articles} }) => {
+        .then(({ body: { articles } }) => {
           expect(articles[0]).to.contain.keys(
             "author",
             "title",
@@ -171,7 +172,7 @@ describe("/api", () => {
       return request(app)
         .get("/api/articles?author=rogersop")
         .expect(200)
-        .then(({ body: {articles} }) => {
+        .then(({ body: { articles } }) => {
           expect(articles[0]).to.contain.keys(
             "author",
             "title",
@@ -189,7 +190,7 @@ describe("/api", () => {
       return request(app)
         .get("/api/articles?topic=mitch")
         .expect(200)
-        .then(({ body: {articles} }) => {
+        .then(({ body: { articles } }) => {
           expect(articles[0]).to.contain.keys(
             "author",
             "title",
@@ -206,7 +207,7 @@ describe("/api", () => {
       return request(app)
         .get("/api/articles?sort_by=banana")
         .expect(400)
-        .then(({ body: {msg} }) => {
+        .then(({ body: { msg } }) => {
           expect(msg).to.contain("Bad Request");
         });
     });
@@ -214,7 +215,7 @@ describe("/api", () => {
       return request(app)
         .get("/api/articles?order=banana")
         .expect(400)
-        .then(({ body: {msg} }) => {
+        .then(({ body: { msg } }) => {
           expect(msg).to.contain("Bad Request");
         });
     });
@@ -222,7 +223,7 @@ describe("/api", () => {
       return request(app)
         .get("/api/articles?author=banana")
         .expect(404)
-        .then(({ body: {msg}}) => {
+        .then(({ body: { msg } }) => {
           expect(msg).to.equal("Author Not Found");
         });
     });
@@ -230,10 +231,27 @@ describe("/api", () => {
       return request(app)
         .get("/api/articles?topic=banana")
         .expect(404)
-        .then(({ body: {msg} }) => {
+        .then(({ body: { msg } }) => {
           expect(msg).to.equal("Topic Not Found");
         });
     });
+    it("GET:200, when add a limit returns limited number of articles ", () => {
+      return request(app)
+        .get("/api/articles?limit=2")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles.length).to.equal(2);
+        });
+    });
+    it("GET:200, when a p returns limited number of items", () => {
+      return request(app)
+        .get("/api/articles?p=2")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles.length).to.equal(2);
+        });
+    });
+    it("GET:200", () => {});
     describe("/:article_id", () => {
       it("GET:200, get article by id", () => {
         return request(app)
@@ -259,7 +277,7 @@ describe("/api", () => {
         return request(app)
           .get("/api/articles/22222")
           .expect(404)
-          .then(({ body: {msg} }) => {
+          .then(({ body: { msg } }) => {
             expect(msg).to.equal("Not Found");
           });
       });
@@ -267,7 +285,7 @@ describe("/api", () => {
         return request(app)
           .get("/api/articles/banana")
           .expect(400)
-          .then(({ body: {msg} }) => {
+          .then(({ body: { msg } }) => {
             expect(msg).to.contain("Bad Request");
           });
       });
@@ -276,7 +294,7 @@ describe("/api", () => {
           .patch("/api/articles/2")
           .send({ inc_votes: 100 })
           .expect(200)
-          .then(({ body: {article} }) => {
+          .then(({ body: { article } }) => {
             expect(article.votes).to.equal(100);
             expect(article.article_id).to.equal(2);
             expect(article).to.be.an("object");
@@ -287,7 +305,7 @@ describe("/api", () => {
           .patch("/api/articles/2")
           .send({ inc_votes: -50 })
           .expect(200)
-          .then(({ body: {article} }) => {
+          .then(({ body: { article } }) => {
             expect(article.votes).to.equal(-50);
             expect(article.article_id).to.equal(2);
             expect(article).to.be.an("object");
@@ -298,17 +316,17 @@ describe("/api", () => {
           .patch("/api/articles/2222222")
           .send({ inc_votes: 100 })
           .expect(404)
-          .then(({ body: {msg} }) => {
+          .then(({ body: { msg } }) => {
             expect(msg).to.equal("Not Found");
           });
       });
-      
+
       it("PATCH:400, invalid inc_votes on request body", () => {
         return request(app)
           .patch("/api/articles/2")
           .send({ inc_votes: "banana" })
           .expect(400)
-          .then(({ body: {msg} }) => {
+          .then(({ body: { msg } }) => {
             expect(msg).to.contain("Bad Request");
           });
       });
@@ -317,7 +335,7 @@ describe("/api", () => {
           .patch("/api/articles/2")
           .send({})
           .expect(200)
-          .then(({ body: {article} }) => {
+          .then(({ body: { article } }) => {
             expect(article.votes).to.equal(0);
           });
       });
@@ -343,10 +361,17 @@ describe("/api", () => {
               body: "Great article, I read it whilst I was lurking"
             })
             .expect(201)
-            .then(({ body: {comment} }) => {
+            .then(({ body: { comment } }) => {
               expect(comment.author).to.equal("lurker");
-              expect(comment).to.be.an('object')
-              expect(comment).to.have.keys('comment_id', 'votes', 'created_at', 'author', 'body', 'article_id')
+              expect(comment).to.be.an("object");
+              expect(comment).to.have.keys(
+                "comment_id",
+                "votes",
+                "created_at",
+                "author",
+                "body",
+                "article_id"
+              );
               expect(comment.votes).to.equal(0);
             });
         });
@@ -355,7 +380,7 @@ describe("/api", () => {
             .post("/api/articles/2/comments")
             .send({})
             .expect(400)
-            .then(({ body: {msg} }) => {
+            .then(({ body: { msg } }) => {
               expect(msg).to.contain(
                 "Bad Request - Required input not provided"
               );
@@ -369,7 +394,7 @@ describe("/api", () => {
               body: "Great article, I read it whilst I was lurking"
             })
             .expect(404)
-            .then(({ body: {msg} }) => {
+            .then(({ body: { msg } }) => {
               expect(msg).to.contain("Not Found");
             });
         });
@@ -381,7 +406,7 @@ describe("/api", () => {
               body: "Great article, I read it whilst I was lurking"
             })
             .expect(400)
-            .then(({ body: {msg} }) => {
+            .then(({ body: { msg } }) => {
               expect(msg).to.contain("Bad Request");
             });
         });
@@ -393,7 +418,7 @@ describe("/api", () => {
               body: "Great article, I read it whilst I was lurking"
             })
             .expect(404)
-            .then(({ body: {msg} }) => {
+            .then(({ body: { msg } }) => {
               expect(msg).to.contain("Not Found");
             });
         });
@@ -401,7 +426,7 @@ describe("/api", () => {
           return request(app)
             .get("/api/articles/1/comments")
             .expect(200)
-            .then(({body: {comments}}) => {
+            .then(({ body: { comments } }) => {
               expect(comments[0]).to.have.keys(
                 "comment_id",
                 "votes",
@@ -415,13 +440,30 @@ describe("/api", () => {
               expect(comments).to.be.sortedBy("created_at", {
                 descending: true
               });
+              expect(comments.length).to.equal(10)
+            });
+        });
+        it("GET:200, when there is a limit returns no. of comments", () => {
+          return request(app)
+            .get("/api/articles/1/comments?limit=2")
+            .expect(200)
+            .then(({ body: { comments } }) => {
+              expect(comments.length).to.equal(2)
+            });
+        });
+        it('GET:200, if p is provided', () => {
+          return request(app)
+            .get("/api/articles/1/comments?p=1")
+            .expect(200)
+            .then(({ body: { comments } }) => {
+              expect(comments.length).to.equal(10);
             });
         });
         it("GET:200, accepts sort_by and order queries", () => {
           return request(app)
             .get("/api/articles/1/comments?sort_by=votes&order=asc")
             .expect(200)
-            .then(({ body: {comments} }) => {
+            .then(({ body: { comments } }) => {
               expect(comments).to.be.sortedBy("votes");
               expect(comments).to.be.ascendingBy("votes");
             });
@@ -430,7 +472,7 @@ describe("/api", () => {
           return request(app)
             .get("/api/articles/1/comments?sort_by=banana&order=asc")
             .expect(400)
-            .then(({ body: {msg} }) => {
+            .then(({ body: { msg } }) => {
               expect(msg).to.contain("Bad Request");
             });
         });
@@ -438,7 +480,7 @@ describe("/api", () => {
           return request(app)
             .get("/api/articles/1/comments?sort_by=votes&order=banana")
             .expect(400)
-            .then(({ body: {msg} }) => {
+            .then(({ body: { msg } }) => {
               expect(msg).to.contain("Bad Request");
             });
         });
@@ -446,7 +488,7 @@ describe("/api", () => {
           return request(app)
             .get("/api/articles/22222/comments")
             .expect(404)
-            .then(({ body: {msg} }) => {
+            .then(({ body: { msg } }) => {
               expect(msg).to.contain("Not Found");
             });
         });
@@ -454,7 +496,7 @@ describe("/api", () => {
           return request(app)
             .get("/api/articles/banana/comments")
             .expect(400)
-            .then(({ body: {msg} }) => {
+            .then(({ body: { msg } }) => {
               expect(msg).to.contain("Bad Request");
             });
         });
@@ -462,7 +504,7 @@ describe("/api", () => {
           return request(app)
             .get("/api/articles/2/comments")
             .expect(200)
-            .then(({ body: {comments} }) => {
+            .then(({ body: { comments } }) => {
               expect(comments).to.eql([]);
             });
         });
@@ -489,7 +531,7 @@ describe("/api", () => {
           .patch("/api/comments/2")
           .send({ inc_votes: 100 })
           .expect(200)
-          .then(({ body: {comment} }) => {
+          .then(({ body: { comment } }) => {
             expect(comment.votes).to.equal(114);
             expect(comment.comment_id).to.equal(2);
             expect(comment).to.be.an("object");
@@ -500,7 +542,7 @@ describe("/api", () => {
           .patch("/api/comments/2")
           .send({ inc_votes: -2 })
           .expect(200)
-          .then(({ body: {comment} }) => {
+          .then(({ body: { comment } }) => {
             expect(comment.votes).to.equal(12);
           });
       });
@@ -509,7 +551,7 @@ describe("/api", () => {
           .patch("/api/comments/2")
           .send({ inc_votes: 100, face: "smiley" })
           .expect(200)
-          .then(({ body: {comment} }) => {
+          .then(({ body: { comment } }) => {
             expect(comment.votes).to.equal(114);
           });
       });
@@ -518,7 +560,7 @@ describe("/api", () => {
           .patch("/api/comments/2")
           .send({})
           .expect(200)
-          .then(({ body: {comment} }) => {
+          .then(({ body: { comment } }) => {
             expect(comment.votes).to.equal(14);
           });
       });
@@ -527,7 +569,7 @@ describe("/api", () => {
           .patch("/api/comments/2")
           .send({})
           .expect(200)
-          .then(({ body: {comment} }) => {
+          .then(({ body: { comment } }) => {
             expect(comment.votes).to.equal(14);
           });
       });
@@ -536,7 +578,7 @@ describe("/api", () => {
           .patch("/api/comments/1")
           .send({ inc_votes: "hello" })
           .expect(400)
-          .then(({ body: {msg} }) => {
+          .then(({ body: { msg } }) => {
             expect(msg).to.contain("Bad Request");
           });
       });
@@ -544,7 +586,7 @@ describe("/api", () => {
         return request(app)
           .patch("/api/comments/2222")
           .expect(404)
-          .then(({ body: {msg} }) => {
+          .then(({ body: { msg } }) => {
             expect(msg).to.contain("Not Found");
           });
       });
@@ -557,7 +599,7 @@ describe("/api", () => {
         return request(app)
           .delete("/api/comments/2222")
           .expect(404)
-          .then(({ body: {msg} }) => {
+          .then(({ body: { msg } }) => {
             expect(msg).to.equal("Comment ID Not Found");
           });
       });
@@ -565,7 +607,7 @@ describe("/api", () => {
         return request(app)
           .delete("/api/comments/banana")
           .expect(400)
-          .then(({ body: {msg} }) => {
+          .then(({ body: { msg } }) => {
             expect(msg).to.contain("Bad Request");
           });
       });
