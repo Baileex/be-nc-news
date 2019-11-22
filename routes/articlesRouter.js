@@ -5,11 +5,12 @@ const {
   patchArticleById,
   postCommentbyId,
   getAllComments,
-  getAllArticles
+  getAllArticles,
+  postArticle
 } = require("../controllers/articlesController");
 const { invalidMethods } = require("../error-handling/errors");
 
-articlesRouter.route('/').get(getAllArticles).all(invalidMethods)
+articlesRouter.route('/').get(getAllArticles).post(postArticle).all(invalidMethods)
 
 articlesRouter
   .route("/:article_id")

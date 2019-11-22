@@ -4,7 +4,8 @@ const {
   addNewComment,
   fetchComments,
   fetchAllArticles,
-  countArticles
+  countArticles,
+  createArticle
 } = require("../models/articlesModel");
 
 exports.getArticleById = (req, res, next) => {
@@ -69,3 +70,7 @@ exports.getAllArticles = (req, res, next) => {
     })
     .catch(next);
 };
+
+exports.postArticle = (req, res, next) => {
+  createArticle()
+}

@@ -140,6 +140,19 @@ const countArticles = (author, topic) => {
        articles.length);
 }; 
 
+// const createArticle = (article) => {
+//   return connection
+//     .insert(article)
+//     .into("articles")
+//     .returning("*")
+//     .then(([comment]) => {
+//       if (comment.author === null || comment.body === null) {
+//         return Promise.reject({ status: 400, msg: "Bad Request" });
+//       } else return comment;
+//     });
+// };
+// }
+
 
 module.exports = {
   fetchArticleById,
@@ -148,5 +161,6 @@ module.exports = {
   fetchComments,
   fetchAllArticles,
   checkifReal,
-  countArticles
+  countArticles,
+  createArticle
 };
