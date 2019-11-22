@@ -1,5 +1,4 @@
 exports.formatDates = list => {
-if (list.length === 0) return [];
 return list.map(inputElement => {
   const element = {...inputElement}
   element.created_at = new Date(element.created_at).toUTCString();

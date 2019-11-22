@@ -30,7 +30,7 @@ exports.patchArticleById = (req, res, next) => {
 exports.postCommentbyId = (req, res, next) => {
   const { username, body } = req.body;
   const { article_id } = req.params;
-  let comment = {
+  const comment = {
     author: username,
     article_id: article_id,
     body: body

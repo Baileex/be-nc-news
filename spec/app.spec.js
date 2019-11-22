@@ -34,8 +34,8 @@ describe("/api", () => {
       return request(app)
         [method]("/api")
         .expect(405)
-        .then(({ body }) => {
-          expect(body.msg).to.equal("Invalid Method");
+        .then(({ body: {msg} }) => {
+          expect(msg).to.equal("Invalid Method");
         });
     });
     return Promise.all(methodPromises);
@@ -46,11 +46,11 @@ describe("/api", () => {
       return request(app)
         .get("/api/topics")
         .expect(200)
-        .then(({ body }) => {
+        .then(({ body: {topics} }) => {
           // console.log(body.topics);
-          expect(body.topics).to.be.an("array");
-          expect(body.topics[0]).to.contain.keys("slug", "description");
-          expect(body.topics[0].slug).to.equal("mitch");
+          expect(topics).to.be.an("array");
+          expect(topics[0]).to.contain.keys("slug", "description");
+          expect(topics[0].slug).to.equal("mitch");
         });
     });
     it("GET:404, returns error if incorrect path", () => {
@@ -82,10 +82,10 @@ describe("/api", () => {
         return request(app)
           .get("/api/users/butter_bridge")
           .expect(200)
-          .then(({ body }) => {
-            expect(body.user.username).to.equal("butter_bridge");
-            expect(body.user).to.have.keys("username", "avatar_url", "name");
-            expect(body.user).to.be.an("object");
+          .then(({ body: {user} }) => {
+            expect(user.username).to.equal("butter_bridge");
+            expect(user).to.have.keys("username", "avatar_url", "name");
+            expect(user).to.be.an("object");
           });
       });
       it("INVALID:METHODS", () => {
@@ -105,8 +105,8 @@ describe("/api", () => {
         return request(app)
           .get("/api/users/banana")
           .expect(404)
-          .then(({ body }) => {
-            expect(body.msg).to.equal("Username not found");
+          .then(({ body: {msg} }) => {
+            expect(msg).to.equal("Username not found");
           });
       });
     });
@@ -116,9 +116,9 @@ describe("/api", () => {
       return request(app)
         .get("/api/articles")
         .expect(200)
-        .then(({ body }) => {
+        .then(({ body: {articles} }) => {
           // console.log(body.articles)
-          expect(body.articles[0]).to.contain.keys(
+          expect(articles[0]).to.contain.keys(
             "author",
             "title",
             "article_id",
@@ -127,19 +127,19 @@ describe("/api", () => {
             "votes",
             "comment_count"
           );
-          expect(body.articles).to.be.sortedBy("created_at", {
+          expect(articles).to.be.sortedBy("created_at", {
             descending: true
           });
-          expect(body.articles).to.be.descendingBy("created_at");
-          expect(body.articles.length).to.equal(12);
+          expect(articles).to.be.descendingBy("created_at");
+          expect(articles.length).to.equal(12);
         });
     });
     it("GET:200, accepts the queries sort_by", () => {
       return request(app)
         .get("/api/articles?sort_by=author")
         .expect(200)
-        .then(({ body }) => {
-          expect(body.articles[0]).to.contain.keys(
+        .then(({ body: {articles} }) => {
+          expect(articles[0]).to.contain.keys(
             "author",
             "title",
             "article_id",
@@ -149,16 +149,16 @@ describe("/api", () => {
             "comment_count"
           );
           expect
-          expect(body.articles).to.be.descendingBy("author");
-          expect(body.articles[0].author).to.equal('rogersop')
+          expect(articles).to.be.descendingBy("author");
+          expect(articles[0].author).to.equal('rogersop')
         });
     });
     it("GET:200, accepts the queries order", () => {
       return request(app)
         .get("/api/articles?order=asc")
         .expect(200)
-        .then(({ body }) => {
-          expect(body.articles[0]).to.contain.keys(
+        .then(({ body: {articles} }) => {
+          expect(articles[0]).to.contain.keys(
             "author",
             "title",
             "article_id",
@@ -167,15 +167,15 @@ describe("/api", () => {
             "votes",
             "comment_count"
           );
-          expect(body.articles).to.be.ascendingBy("created_at");
+          expect(articles).to.be.ascendingBy("created_at");
         });
     });
     it("GET:200, filters the articles by author", () => {
       return request(app)
         .get("/api/articles?author=rogersop")
         .expect(200)
-        .then(({ body }) => {
-          expect(body.articles[0]).to.contain.keys(
+        .then(({ body: {articles} }) => {
+          expect(articles[0]).to.contain.keys(
             "author",
             "title",
             "article_id",
@@ -184,16 +184,16 @@ describe("/api", () => {
             "votes",
             "comment_count"
           );
-          expect(body.articles[0].author).to.equal("rogersop");
-          expect(body.articles[1].author).to.equal("rogersop");
+          expect(articles[0].author).to.equal("rogersop");
+          expect(articles[1].author).to.equal("rogersop");
         });
     });
     it("GET:200, filters the articles by topic", () => {
       return request(app)
         .get("/api/articles?topic=mitch")
         .expect(200)
-        .then(({ body }) => {
-          expect(body.articles[0]).to.contain.keys(
+        .then(({ body: {articles} }) => {
+          expect(articles[0]).to.contain.keys(
             "author",
             "title",
             "article_id",
@@ -202,39 +202,39 @@ describe("/api", () => {
             "votes",
             "comment_count"
           );
-          expect(body.articles).to.be.descendingBy("topic");
+          expect(articles).to.be.descendingBy("topic");
         });
     });
     it("GET:400, error if provided with an invalid sort_by value", () => {
       return request(app)
         .get("/api/articles?sort_by=banana")
         .expect(400)
-        .then(({ body }) => {
-          expect(body.msg).to.contain("Bad Request");
+        .then(({ body: {msg} }) => {
+          expect(msg).to.contain("Bad Request");
         });
     });
     it("GET:400, error if provided with an invalid order value", () => {
       return request(app)
         .get("/api/articles?order=banana")
         .expect(400)
-        .then(({ body }) => {
-          expect(body.msg).to.contain("Bad Request");
+        .then(({ body: {msg} }) => {
+          expect(msg).to.contain("Bad Request");
         });
     });
     it("GET:404, error if provided with an invalid author", () => {
       return request(app)
         .get("/api/articles?author=banana")
         .expect(404)
-        .then(({ body }) => {
-          expect(body.msg).to.equal("Author Not Found");
+        .then(({ body: {msg}}) => {
+          expect(msg).to.equal("Author Not Found");
         });
     });
     it("GET:404, error if provided with an invalid topic", () => {
       return request(app)
         .get("/api/articles?topic=banana")
         .expect(404)
-        .then(({ body }) => {
-          expect(body.msg).to.equal("Topic Not Found");
+        .then(({ body: {msg} }) => {
+          expect(msg).to.equal("Topic Not Found");
         });
     });
     describe("/:article_id", () => {
@@ -262,16 +262,16 @@ describe("/api", () => {
         return request(app)
           .get("/api/articles/22222")
           .expect(404)
-          .then(({ body }) => {
-            expect(body.msg).to.equal("Not Found");
+          .then(({ body: {msg} }) => {
+            expect(msg).to.equal("Not Found");
           });
       });
       it("GET:400, an invalid id", () => {
         return request(app)
           .get("/api/articles/banana")
           .expect(400)
-          .then(({ body }) => {
-            expect(body.msg).to.contain("Bad Request");
+          .then(({ body: {msg} }) => {
+            expect(msg).to.contain("Bad Request");
           });
       });
       it("PATCH:200, successfully increases votes in article ", () => {
@@ -279,11 +279,11 @@ describe("/api", () => {
           .patch("/api/articles/2")
           .send({ inc_votes: 100 })
           .expect(200)
-          .then(({ body }) => {
+          .then(({ body: {article} }) => {
             //console.log(body)
-            expect(body.article.votes).to.equal(100);
-            expect(body.article.article_id).to.equal(2);
-            expect(body.article).to.be.an("object");
+            expect(article.votes).to.equal(100);
+            expect(article.article_id).to.equal(2);
+            expect(article).to.be.an("object");
           });
       });
       it("PATCH:200, successfully decreases votes in article ", () => {
@@ -291,11 +291,11 @@ describe("/api", () => {
           .patch("/api/articles/2")
           .send({ inc_votes: -50 })
           .expect(200)
-          .then(({ body }) => {
+          .then(({ body: {article} }) => {
             //console.log(body)
-            expect(body.article.votes).to.equal(-50);
-            expect(body.article.article_id).to.equal(2);
-            expect(body.article).to.be.an("object");
+            expect(article.votes).to.equal(-50);
+            expect(article.article_id).to.equal(2);
+            expect(article).to.be.an("object");
           });
       });
       it("PATCH:404, an invalid id", () => {
@@ -303,8 +303,8 @@ describe("/api", () => {
           .patch("/api/articles/2222222")
           .send({ inc_votes: 100 })
           .expect(404)
-          .then(({ body }) => {
-            expect(body.msg).to.equal("Not Found");
+          .then(({ body: {msg} }) => {
+            expect(msg).to.equal("Not Found");
           });
       });
       
@@ -313,8 +313,8 @@ describe("/api", () => {
           .patch("/api/articles/2")
           .send({ inc_votes: "banana" })
           .expect(400)
-          .then(({ body }) => {
-            expect(body.msg).to.contain("Bad Request");
+          .then(({ body: {msg} }) => {
+            expect(msg).to.contain("Bad Request");
           });
       });
       it("PATCH:200, no content request body", () => {
@@ -322,9 +322,9 @@ describe("/api", () => {
           .patch("/api/articles/2")
           .send({})
           .expect(200)
-          .then(({ body }) => {
+          .then(({ body: {article} }) => {
             //console.log(body)
-            expect(body.article.votes).to.equal(0);
+            expect(article.votes).to.equal(0);
           });
       });
       it("INVALID:METHODS", () => {
@@ -349,13 +349,12 @@ describe("/api", () => {
               body: "Great article, I read it whilst I was lurking"
             })
             .expect(201)
-            .then(({ body }) => {
+            .then(({ body: {comment} }) => {
               // console.log(body.comment);
-              expect(body.comment.author).to.equal("lurker");
-              expect(body.comment).to.be.an('object')
-              expect(body).to.have.key('comment')
-              expect(body.comment).to.have.keys('comment_id', 'votes', 'created_at', 'author', 'body')
-              expect(body.comment.votes).to.equal(0);
+              expect(comment.author).to.equal("lurker");
+              expect(comment).to.be.an('object')
+              expect(comment).to.have.keys('comment_id', 'votes', 'created_at', 'author', 'body')
+              expect(comment.votes).to.equal(0);
             });
         });
         it("POST:400, no username or body included in sent body", () => {
@@ -363,8 +362,8 @@ describe("/api", () => {
             .post("/api/articles/2/comments")
             .send({})
             .expect(400)
-            .then(({ body }) => {
-              expect(body.msg).to.contain(
+            .then(({ body: {msg} }) => {
+              expect(msg).to.contain(
                 "Bad Request - Required input not provided"
               );
             });
@@ -377,8 +376,8 @@ describe("/api", () => {
               body: "Great article, I read it whilst I was lurking"
             })
             .expect(404)
-            .then(({ body }) => {
-              expect(body.msg).to.contain("Not Found");
+            .then(({ body: {msg} }) => {
+              expect(msg).to.contain("Not Found");
             });
         });
         it("POST:400, article_id invalid", () => {
@@ -389,8 +388,8 @@ describe("/api", () => {
               body: "Great article, I read it whilst I was lurking"
             })
             .expect(400)
-            .then(({ body }) => {
-              expect(body.msg).to.contain("Bad Request");
+            .then(({ body: {msg} }) => {
+              expect(msg).to.contain("Bad Request");
             });
         });
         it("POST:404, username does not exist", () => {
@@ -401,17 +400,17 @@ describe("/api", () => {
               body: "Great article, I read it whilst I was lurking"
             })
             .expect(404)
-            .then(({ body }) => {
-              expect(body.msg).to.contain("Not Found");
+            .then(({ body: {msg} }) => {
+              expect(msg).to.contain("Not Found");
             });
         });
         it("GET:200, get all the comments for article by id (sorted by created_at)", () => {
           return request(app)
             .get("/api/articles/1/comments")
             .expect(200)
-            .then(({body}) => {
+            .then(({body: {comments}}) => {
               // console.log(body);
-              expect(body.comments[0]).to.have.keys(
+              expect(comments[0]).to.have.keys(
                 "comment_id",
                 "votes",
                 "created_at",
@@ -419,9 +418,9 @@ describe("/api", () => {
                 "body",
                 "article_id"
               );
-              expect(body.comments[0].article_id).to.equal(1);
-              expect(body.comments).to.be.an("array");
-              expect(body.comments).to.be.sortedBy("created_at", {
+              expect(comments[0].article_id).to.equal(1);
+              expect(comments).to.be.an("array");
+              expect(comments).to.be.sortedBy("created_at", {
                 descending: true
               });
             });
@@ -430,50 +429,50 @@ describe("/api", () => {
           return request(app)
             .get("/api/articles/1/comments?sort_by=votes&order=asc")
             .expect(200)
-            .then(({ body }) => {
-              expect(body.comments).to.be.sortedBy("votes");
-              expect(body.comments).to.be.ascendingBy("votes");
+            .then(({ body: {comments} }) => {
+              expect(comments).to.be.sortedBy("votes");
+              expect(comments).to.be.ascendingBy("votes");
             });
         });
         it("GET:400, sort_by a column that does not exist", () => {
           return request(app)
             .get("/api/articles/1/comments?sort_by=banana&order=asc")
             .expect(400)
-            .then(({ body }) => {
-              expect(body.msg).to.contain("Bad Request");
+            .then(({ body: {msg} }) => {
+              expect(msg).to.contain("Bad Request");
             });
         });
         it("GET:400, order isn't valid", () => {
           return request(app)
             .get("/api/articles/1/comments?sort_by=votes&order=banana")
             .expect(400)
-            .then(({ body }) => {
-              expect(body.msg).to.contain("Bad Request");
+            .then(({ body: {msg} }) => {
+              expect(msg).to.contain("Bad Request");
             });
         });
         it("GET:404, id does not exist", () => {
           return request(app)
             .get("/api/articles/22222/comments")
             .expect(404)
-            .then(({ body }) => {
-              expect(body.msg).to.contain("Not Found");
+            .then(({ body: {msg} }) => {
+              expect(msg).to.contain("Not Found");
             });
         });
         it("GET:400, id invalid", () => {
           return request(app)
             .get("/api/articles/banana/comments")
             .expect(400)
-            .then(({ body }) => {
-              expect(body.msg).to.contain("Bad Request");
+            .then(({ body: {msg} }) => {
+              expect(msg).to.contain("Bad Request");
             });
         });
         it("GET:200, valid id but no comments", () => {
           return request(app)
             .get("/api/articles/2/comments")
             .expect(200)
-            .then(({ body }) => {
+            .then(({ body: {comments} }) => {
               // console.log(body)
-              expect(body.comments).to.eql([]);
+              expect(comments).to.eql([]);
             });
         });
       });
@@ -499,11 +498,11 @@ describe("/api", () => {
           .patch("/api/comments/2")
           .send({ inc_votes: 100 })
           .expect(200)
-          .then(({ body }) => {
+          .then(({ body: {comment} }) => {
             //console.log(body.comment);
-            expect(body.comment.votes).to.equal(114);
-            expect(body.comment.comment_id).to.equal(2);
-            expect(body.comment).to.be.an("object");
+            expect(comment.votes).to.equal(114);
+            expect(comment.comment_id).to.equal(2);
+            expect(comment).to.be.an("object");
           });
       });
       it("PATCH:200, decrements the vote count by the  number", () => {
@@ -511,8 +510,8 @@ describe("/api", () => {
           .patch("/api/comments/2")
           .send({ inc_votes: -2 })
           .expect(200)
-          .then(({ body }) => {
-            expect(body.comment.votes).to.equal(12);
+          .then(({ body: {comment} }) => {
+            expect(comment.votes).to.equal(12);
           });
       });
       it("PATCH:200, ignores additional body elements", () => {
@@ -520,8 +519,8 @@ describe("/api", () => {
           .patch("/api/comments/2")
           .send({ inc_votes: 100, face: "smiley" })
           .expect(200)
-          .then(({ body }) => {
-            expect(body.comment.votes).to.equal(114);
+          .then(({ body: {comment} }) => {
+            expect(comment.votes).to.equal(114);
           });
       });
       it("PATCH:200, when no body elements", () => {
@@ -529,8 +528,8 @@ describe("/api", () => {
           .patch("/api/comments/2")
           .send({})
           .expect(200)
-          .then(({ body }) => {
-            expect(body.comment.votes).to.equal(14);
+          .then(({ body: {comment} }) => {
+            expect(comment.votes).to.equal(14);
           });
       });
       it("PATCH:200, when no inc_votes value, makes no changes", () => {
@@ -538,8 +537,8 @@ describe("/api", () => {
           .patch("/api/comments/2")
           .send({})
           .expect(200)
-          .then(({ body }) => {
-            expect(body.comment.votes).to.equal(14);
+          .then(({ body: {comment} }) => {
+            expect(comment.votes).to.equal(14);
           });
       });
       it("PATCH:400, error where an invalid inc_votes value is provided", () => {
@@ -547,16 +546,16 @@ describe("/api", () => {
           .patch("/api/comments/1")
           .send({ inc_votes: "hello" })
           .expect(400)
-          .then(({ body }) => {
-            expect(body.msg).to.contain("Bad Request");
+          .then(({ body: {msg} }) => {
+            expect(msg).to.contain("Bad Request");
           });
       });
       it("PATCH:404, error if provided a comment_id that does not exist", () => {
         return request(app)
           .patch("/api/comments/2222")
           .expect(404)
-          .then(({ body }) => {
-            expect(body.msg).to.contain("Not Found");
+          .then(({ body: {msg} }) => {
+            expect(msg).to.contain("Not Found");
           });
       });
       it("DELETE:204, successfully deletes comment ", () => {
@@ -568,16 +567,16 @@ describe("/api", () => {
         return request(app)
           .delete("/api/comments/2222")
           .expect(404)
-          .then(({ body }) => {
-            expect(body.msg).to.equal("Comment ID Not Found");
+          .then(({ body: {msg} }) => {
+            expect(msg).to.equal("Comment ID Not Found");
           });
       });
       it("DELETE:400, error message if provided a invalid comment_id that does not exist", () => {
         return request(app)
           .delete("/api/comments/banana")
           .expect(400)
-          .then(({ body }) => {
-            expect(body.msg).to.contain("Bad Request");
+          .then(({ body: {msg} }) => {
+            expect(msg).to.contain("Bad Request");
           });
       });
       it("INVALID:METHODS", () => {

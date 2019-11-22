@@ -58,6 +58,7 @@ describe("formatDates", () => {
         created_at: 154700514171
       }
     ];
+    // use newDate instead!
     const actual = formatDates(arr);
     expect(actual[3].created_at).to.eql(
       new Date(arr[3].created_at).toUTCString()
@@ -163,7 +164,6 @@ describe("formatComments", () => {
     ];
     let refObj = { A: 1, B: 2 };
     let actual = formatComments(input, refObj);
-    actual = formatDates(actual);
     expect(actual).to.eql([
       {
         body: "This is a bad article name",

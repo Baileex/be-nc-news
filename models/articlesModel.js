@@ -57,8 +57,9 @@ const fetchComments = (article_id, sort_by, order) => {
     .returning("*")
     .then(comments => {
       const validOrder = ["asc", "desc"].includes(order);
-      if (order && !validOrder) return Promise.reject({ status: 400, msg: "Bad Request" });
-      
+      if (order && !validOrder)
+        return Promise.reject({ status: 400, msg: "Bad Request" });
+
       return comments;
     });
 };
@@ -84,20 +85,18 @@ const fetchAllArticles = (sort_by, order, author, topic) => {
       const realTopic = topic ? checkifReal(topic, "topics", "slug") : null;
       if (order && !validOrder) {
         return Promise.reject({ status: 400, msg: "Bad Request" });
-      } else
-        return Promise.all([realAuthor, realTopic, articles]).then(
-          ([realAuthor, realTopic, articles]) => {
-            if (realAuthor === false) {
-              return Promise.reject({ status: 404, msg: "Author Not Found" });
-            } else if (realTopic === false) {
-              return Promise.reject({ status: 404, msg: "Topic Not Found" });
-            } else {
-              return articles.map(({ body, ...article }) => {
-                return { ...article };
-              });
-            }
-          }
-        );
+      } else return Promise.all([realAuthor, realTopic, articles]);
+    })
+    .then(([realAuthor, realTopic, articles]) => {
+      if (realAuthor === false) {
+        return Promise.reject({ status: 404, msg: "Author Not Found" });
+      } else if (realTopic === false) {
+        return Promise.reject({ status: 404, msg: "Topic Not Found" });
+      } else {
+        return articles.map(({ body, ...article }) => {
+          return { ...article };
+        });
+      }
     });
 };
 const checkifReal = (query, table, column) => {

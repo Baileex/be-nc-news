@@ -33,15 +33,16 @@ The following developer dependencies will need to be installed:
 
 ### Installing
 
-A step by step series of examples that tell you how to get a development env running
+This section details the steps to get the development environment up and running. 
 
-Say what the step will be
+
+Step 1: clone the repository 
 
 ```
-Give the example
+$ git clone https://github.com/Baileex/be-nc-news
 ```
 
-And repeat
+Step 2: open the repository in your preferred code editor
 
 ```
 until finished
