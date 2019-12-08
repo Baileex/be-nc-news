@@ -5,7 +5,9 @@ const {
   fetchComments,
   fetchAllArticles,
   countArticles,
-  createArticle
+  createArticle,
+  removeArticle,
+  removeCommentsByArticle
 } = require("../models/articlesModel");
 
 exports.getArticleById = (req, res, next) => {
@@ -44,7 +46,7 @@ exports.postCommentbyId = (req, res, next) => {
 
 exports.getAllComments = (req, res, next) => {
   const { article_id } = req.params;
-  const { sort_by, order , limit, p} = req.query;
+  const { sort_by, order, limit, p } = req.query;
   fetchArticleById(article_id)
     .then(article => {
       // need fetchComments to resolve before send response to client
@@ -65,12 +67,31 @@ exports.getAllArticles = (req, res, next) => {
     }
   });
   fetchAllArticles(sort_by, order, author, topic, limit, p)
-    .then(({updatedArticles, total_count}) => {
-      res.status(200).send({ articles: updatedArticles, total_count: total_count });
+    .then(({ updatedArticles, total_count }) => {
+      res
+        .status(200)
+        .send({ articles: updatedArticles, total_count: total_count });
     })
     .catch(next);
 };
 
 exports.postArticle = (req, res, next) => {
-  createArticle()
-}
+  const { body } = req;
+  createArticle(body)
+    .then(article => {
+      res.status(201).send({ article: article });
+    })
+    .catch(next);
+};
+
+exports.deleteArticleById = (req, res, next) => {
+  const { article_id } = req.params;
+  removeCommentsByArticle(article_id)
+    .then(deleted => {
+      removeArticle(article_id);
+    })
+    .then(message => {
+      res.sendStatus(204);
+    })
+    .catch(next);
+};

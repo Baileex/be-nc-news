@@ -81,16 +81,16 @@ const fetchAllArticles = (sort_by, order, author, topic, limit = 10, p = 1) => {
       if (author) filter.where({ "articles.author": author });
       if (topic) filter.where({ "articles.topic": topic });
     })
-    
+
     .returning("*")
     .then(articles => {
-       countArticles(author, topic).then(articleCount => {
-         let maxPages = Math.ceil(articleCount / limit);
-         if (maxPages === 0) {
-           maxPages = 1;
-         }
-       });
-      const totalCount = countArticles(author, topic)
+      countArticles(author, topic).then(articleCount => {
+        let maxPages = Math.ceil(articleCount / limit);
+        if (maxPages === 0) {
+          maxPages = 1;
+        }
+      });
+      const totalCount = countArticles(author, topic);
       const validOrder = ["asc", "desc"].includes(order);
       const realAuthor = author
         ? checkifReal(author, "users", "username")
@@ -109,7 +109,7 @@ const fetchAllArticles = (sort_by, order, author, topic, limit = 10, p = 1) => {
         const updatedArticles = articles.map(({ body, ...article }) => {
           return { ...article };
         });
-        return {updatedArticles, total_count: totalCount}
+        return { updatedArticles, total_count: totalCount };
       }
     });
 };
@@ -125,7 +125,7 @@ const checkifReal = (query, table, column) => {
 };
 
 const countArticles = (author, topic) => {
- return connection
+  return connection
     .select("*")
     .from("articles")
     .modify(selector => {
@@ -136,23 +136,51 @@ const countArticles = (author, topic) => {
         selector.where("articles.topic", "=", topic);
       }
     })
-    .then(articles =>
-       articles.length);
-}; 
+    .then(articles => articles.length);
+};
 
-// const createArticle = (article) => {
-//   return connection
-//     .insert(article)
-//     .into("articles")
-//     .returning("*")
-//     .then(([comment]) => {
-//       if (comment.author === null || comment.body === null) {
-//         return Promise.reject({ status: 400, msg: "Bad Request" });
-//       } else return comment;
-//     });
-// };
-// }
+const createArticle = article => {
+  return connection
+    .insert(article)
+    .into("articles")
+    .returning("*")
+    .then(([article]) => {
+      return article;
+    });
+};
 
+const removeArticle = article_id => {
+  return connection
+    .delete("*")
+    .from("articles")
+    .where({ article_id: article_id })
+    .then(message => {
+      console.log(message.length)
+      if (message.length === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: "Article ID Not Found"
+        });
+      } else return "Article deleted";
+    });
+};
+
+const removeCommentsByArticle = article_id => {
+  return connection
+    .select("*")
+    .from("comments")
+    .where("article_id", "=", article_id)
+    .del().then(deleted => {
+         if (!deleted) {
+           return Promise.reject({
+             status: 404,
+             msg: "Article ID Not Found"
+           });
+         } else {
+           return "Comments deleted";
+         }
+    })
+};
 
 module.exports = {
   fetchArticleById,
@@ -162,5 +190,7 @@ module.exports = {
   fetchAllArticles,
   checkifReal,
   countArticles,
-  createArticle
+  createArticle,
+  removeArticle,
+  removeCommentsByArticle
 };

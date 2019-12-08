@@ -3,6 +3,7 @@ exports.invalidMethods = (req, res, next) => {
   };
 
   exports.serverError = (err, req, res, next) => {
+    console.log(err)
       res.status(500).send({ msg: "Internal Server Error" });
   };
 
@@ -10,7 +11,8 @@ exports.invalidMethods = (req, res, next) => {
     const error400Ref = {
       "22P02": "Bad Request - invalid value",
       "23502": "Bad Request - Required input not provided",
-      "42703": "Bad Request - Cannot query something that does not exist"
+      "42703": "Bad Request - Cannot query something that does not exist",
+      "23505": "Bad Request - duplicate input"
     };
     const error404Ref = {
       "23503": "ID Not Found",

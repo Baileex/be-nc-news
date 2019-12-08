@@ -6,7 +6,8 @@ const {
   postCommentbyId,
   getAllComments,
   getAllArticles,
-  postArticle
+  postArticle,
+  deleteArticleById
 } = require("../controllers/articlesController");
 const { invalidMethods } = require("../error-handling/errors");
 
@@ -16,6 +17,7 @@ articlesRouter
   .route("/:article_id")
   .get(getArticleById)
   .patch(patchArticleById)
+  .delete(deleteArticleById)
   .all(invalidMethods)
 
 

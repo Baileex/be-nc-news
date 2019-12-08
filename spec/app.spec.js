@@ -60,6 +60,70 @@ describe("/api", () => {
           expect(body.status).to.equal(404);
         });
     });
+    it("POST:201, returns the posted topic", () => {
+      return request(app)
+        .post("/api/topics")
+        .send({
+          slug: "dogs",
+          description: "Man's best friend"
+        })
+        .expect(201)
+        .then(({body}) => {
+          expect(body.topic).to.contain.keys("slug", "description");
+          expect(body.topic.slug).to.equal("dogs");
+        });
+    });
+    it("POST:400, returns an error if the slug already exists", () => {
+      return request(app)
+        .post("/api/topics")
+        .send({
+          slug: "cats",
+          description: "Any description"
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.include(
+            "Bad Request - duplicate input"
+          );
+        });
+    });
+    it("POST:400, returns an error if no description is provided", () => {
+      return request(app)
+        .post("/api/topics")
+        .send({
+          slug: "dogs"
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.contain(
+            "Bad Request - Required input not provided"
+          );
+        });
+    });
+    it("POST:400, returns an error if no slug is provided", () => {
+      return request(app)
+        .post("/api/topics")
+        .send({
+          description: "Any description"
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.contain(
+            "Bad Request - Required input not provided"
+          );
+        });
+    });
+    it("POST:400, returns an error if no details are provided", () => {
+      return request(app)
+        .post("/api/topics")
+        .send({})
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.include(
+            "Bad Request - Required input not provided"
+          );
+        });
+    });
     it("INVALID:METHODS", () => {
       const invalidMethods = ["patch", "put", "delete"];
       const methodPromises = invalidMethods.map(method => {
@@ -75,6 +139,44 @@ describe("/api", () => {
     });
   });
   describe("/users", () => {
+    it("POST:201, displays the details of the new user", () => {
+      return request(app)
+        .post("/api/users")
+        .send({
+          username: "bobby71",
+          avatar_url:
+            "https://avatars2.githubusercontent.com/u/24394918?s=400&v=4",
+          name: "Robert"
+        })
+        .expect(201)
+        .then(({ body }) => {
+          expect(body.user).to.contain.keys("username", "avatar_url", "name");
+        });
+    });
+    it("POST:400, returns an error if appropriate details are not provided", () => {
+      return request(app)
+        .post("/api/users")
+        .send({})
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.contain(
+            "Bad Request - Required input not provided"
+          );
+        });
+    });
+    it("GET:200, displays all registered users", () => {
+      return request(app)
+        .get("/api/users")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.users).to.be.an("array");
+          expect(body.users[0]).to.contain.keys(
+            "username",
+            "name",
+            "avatar_url"
+          );
+        });
+    });
     describe("/:username", () => {
       it("GET:200, get user by username", () => {
         return request(app)
@@ -87,7 +189,7 @@ describe("/api", () => {
           });
       });
       it("INVALID:METHODS", () => {
-        const invalidMethods = ["patch", "put", "delete", "post"];
+        const invalidMethods = ["patch", "put", "delete"];
         const methodPromises = invalidMethods.map(method => {
           return request(app)
             [method]("/api/users/butter_bridge")
@@ -130,6 +232,32 @@ describe("/api", () => {
           expect(articles).to.be.descendingBy("created_at");
           expect(articles.length).to.equal(10);
           expect(total_count).to.equal(12);
+        });
+    });
+    it("POST:201 posts a new article", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({
+          title: "A Critical Analysis of Cat Food Manufacturing",
+          topic: "cats",
+          author: "rogersop",
+          body:
+            "After many months of gruelling investigations, it emerges that the famous cat food, 'Catlent Green' is in fact comprised of cats."
+        })
+        .expect(201)
+        .then(({ body }) => {
+          expect(body.article.title).to.equal(
+            "A Critical Analysis of Cat Food Manufacturing"
+          );
+        });
+    });
+    it("POST:400, no username or body included in sent body", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({})
+        .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).to.contain("Bad Request - Required input not provided");
         });
     });
     it("GET:200, accepts the queries sort_by", () => {
@@ -339,8 +467,29 @@ describe("/api", () => {
             expect(article.votes).to.equal(0);
           });
       });
+      it("DELETE: status 204", () => {
+        return request(app)
+          .delete("/api/articles/1")
+          .expect(204)
+      });
+      it("DELETE: status 404, returns an error where an article that does not exist is provided", () => {
+        return request(app)
+          .delete("/api/articles/999999")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Article ID Not Found");
+          });
+      });
+      it("DELETE: status 400, returns an error where an invalid article_id is provided", () => {
+        return request(app)
+          .delete("/api/articles/invalid")
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Bad Request - invalid value");
+          });
+      });
       it("INVALID:METHODS", () => {
-        const invalidMethods = ["put", "delete", "post"];
+        const invalidMethods = ["put", "post"];
         const methodPromises = invalidMethods.map(method => {
           return request(app)
             [method]("/api/articles/2")
@@ -440,7 +589,7 @@ describe("/api", () => {
               expect(comments).to.be.sortedBy("created_at", {
                 descending: true
               });
-              expect(comments.length).to.equal(10)
+              expect(comments.length).to.equal(10);
             });
         });
         it("GET:200, when there is a limit returns no. of comments", () => {
@@ -448,10 +597,10 @@ describe("/api", () => {
             .get("/api/articles/1/comments?limit=2")
             .expect(200)
             .then(({ body: { comments } }) => {
-              expect(comments.length).to.equal(2)
+              expect(comments.length).to.equal(2);
             });
         });
-        it('GET:200, if p is provided', () => {
+        it("GET:200, if p is provided", () => {
           return request(app)
             .get("/api/articles/1/comments?p=1")
             .expect(200)
