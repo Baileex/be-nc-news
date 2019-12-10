@@ -663,7 +663,7 @@ describe("/api", () => {
   describe("/comments", () => {
     describe("/:comments", () => {
       it("INVALID:METHODS", () => {
-        const invalidMethods = ["get", "post", "put"];
+        const invalidMethods = ["get", "put"];
         const methodPromises = invalidMethods.map(method => {
           return request(app)
             [method]("/api/comments/2")
@@ -761,7 +761,7 @@ describe("/api", () => {
           });
       });
       it("INVALID:METHODS", () => {
-        const invalidMethods = ["get", "post", "put"];
+        const invalidMethods = ["get", "put"];
         const methodPromises = invalidMethods.map(method => {
           return request(app)
             [method]("/api/comments/2")

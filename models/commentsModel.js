@@ -28,11 +28,6 @@ const removeComment = comment_id => {
     });
 };
 
-const fetchAllUsers = () => {
-return connection
-  .select("*")
-  .from("users")
-  .returning("*");
-}
+
 
 module.exports = { updateCommentById, removeComment };
