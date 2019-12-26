@@ -38,7 +38,7 @@ This section details the steps to get the development environment up and running
 Step 1: Clone the repository with the command: 
 
 ```
-$ git clone https://github.com/Baileex/be-nc-news
+$ git clone https://github.com/Baileex/be-nc-news-v2
 ```
 
 Step 2: Open the repository in your preferred code editor e.g VSCode, Atom etc
